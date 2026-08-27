@@ -1585,6 +1585,65 @@ html,body{background:#071018!important;}
 #appTabBar .appTabBtn.active{background:rgba(37,205,236,.12)!important;box-shadow:inset 0 -4px #35d4f3!important;}
 @keyframes blueprint-grid{to{background-position:72px 72px,72px 72px,18px 18px,18px 18px}}@keyframes blueprint-points{0%,100%{opacity:.38}48%{opacity:1}60%{opacity:.55}}@keyframes blueprint-marker{to{transform:rotate(405deg)}}
 </style>
+
+<style id="aluminium-contrast-correction">
+/* Aluminium visibility correction: distinct cool surfaces on screen, muted high-contrast ink on paper. */
+.al-app .plan-box.connecting,.al-app .plan-box.joiner{
+  background:linear-gradient(135deg,#102c38 0%,#0b1c28 55%,#09151e 100%)!important;
+  border:1px solid rgba(102,214,236,.58)!important;
+  border-left:3px solid #54d6ee!important;
+  box-shadow:inset 0 1px 0 rgba(226,251,255,.10),0 12px 28px rgba(0,0,0,.18)!important;
+  color:#e5f4f8!important;
+}
+.al-app .plan-title.connecting,.al-app .plan-title.joiner{color:#82e3f4!important;text-shadow:0 0 12px rgba(82,214,238,.16)!important;}
+.al-app .seg-item{background:#0a1620!important;border-color:#315b6c!important;box-shadow:inset 0 1px rgba(224,251,255,.06)!important;}
+.al-app .seg-item .seg-lbl{color:#a8c3ce!important;}
+.al-app .seg-item input[type=number]{background:#061018!important;border-color:#3e7285!important;color:#f2fbfd!important;}
+.al-app .seg-item.auto input{background:#132632!important;color:#c9dce3!important;}
+.al-app .seg-plus{color:#88d8e9!important;}
+.al-app .offcut-preview{
+  background:linear-gradient(90deg,rgba(3,16,25,.92),rgba(8,29,39,.88))!important;
+  border-color:#39718a!important;
+  border-left:2px solid #3fc9e3!important;
+  color:#e6f4f8!important;
+  box-shadow:inset 0 1px rgba(214,249,255,.06)!important;
+}
+.al-app .offcut-preview b{color:#9ce8f5!important;}
+.al-app .invalid-note{color:#ff9a89!important;}
+.al-app .pill.connecting{background:#123b49!important;border:1px solid #367e91!important;color:#a2edf8!important;}
+.al-app .pill.join{background:#18354a!important;border:1px solid #446f9c!important;color:#b9dcff!important;}
+
+/* Printed PDF: preserve a calm, cool engineering palette without low-contrast text. */
+@media print{
+  .al-app .plan-box.connecting,.al-app .plan-box.joiner{
+    background:#e9f4f6!important;
+    border:1px solid #7db4c2!important;
+    border-left:3px solid #218ea7!important;
+    box-shadow:none!important;
+    color:#152d3d!important;
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+  }
+  .al-app .plan-title.connecting,.al-app .plan-title.joiner{color:#0b6077!important;text-shadow:none!important;}
+  .al-app .seg-item{background:#f9fcfd!important;border-color:#9bbdca!important;box-shadow:none!important;}
+  .al-app .seg-item .seg-lbl{color:#405a68!important;}
+  .al-app .seg-item input[type=number],.al-app .seg-item.auto input{background:#edf6f8!important;border-color:#87afbf!important;color:#152d3d!important;}
+  .al-app .seg-plus{color:#235c70!important;}
+  .al-app .offcut-preview{
+    background:#ffffff!important;
+    border-color:#9bbdca!important;
+    border-left:2px solid #218ea7!important;
+    box-shadow:none!important;
+    color:#152d3d!important;
+  }
+  .al-app .offcut-preview *{color:inherit!important;}
+  .al-app .offcut-preview b{color:#0b6077!important;}
+  .al-app .invalid-note{color:#983b31!important;}
+  .al-app .pill.connecting{background:#ddf0f4!important;border-color:#7db4c2!important;color:#15556a!important;}
+  .al-app .pill.join{background:#e8f0f8!important;border-color:#9db7d0!important;color:#234c73!important;}
+}
+</style>
+
 </head>
 
 <body>
