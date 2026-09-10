@@ -1058,7 +1058,7 @@ html,body{margin:0;padding:0;background:var(--charcoal);font-family:'Inter',sans
       <h2>Full Strut Schedule</h2>
       <table id="scheduleTable">
         <thead>
-          <tr><th>#</th><th>Component</th><th>Type</th><th>Length (mm)</th><th>Position</th><th>Spacing to next</th></tr>
+          <tr><th>#</th><th>Component</th><th>Type</th><th>Length (mm)</th><th>Center (design)</th><th>Ruler Mark (edge)</th><th>Spacing to next</th></tr>
         </thead>
         <tbody id="scheduleBody"></tbody>
       </table>
@@ -1469,6 +1469,35 @@ function rulerMark(rawDistance, stiffType, strutType){
   return strutType === 'Joiner' ? rawDistance : rawDistance - halfStrutThickness(stiffType);
 }
 
+// Front and Back boards of a B2B pair mount flush at the same base, so their strut centerlines
+// live in the same bottom-up coordinate frame &mdash; computing both sides with the exact same
+// height/spacing/count and comparing posFromBottom directly is a legitimate stand-in for the
+// real physical pair, and it's all the app can know without a second linked panel entry.
+function computeBothOffsetSides(p){
+  if(p.isChevron){
+    const front = computeChevronStruts(p.width, p.height, p.isDoubleTaper, p.pointCut, p.pointCutLeft, p.pointCutRight, p.pointDir, p.isB2B, p.maxSpacing, p.manualCount, p.isManual, 'front', null, null, p.stiffType);
+    const back  = computeChevronStruts(p.width, p.height, p.isDoubleTaper, p.pointCut, p.pointCutLeft, p.pointCutRight, p.pointDir, p.isB2B, p.maxSpacing, p.manualCount, p.isManual, 'back', null, null, p.stiffType);
+    return {front, back};
+  }
+  const front = computeAllSections(p.sectionHeights, p.maxSpacing, p.manualCounts, p.endLength, p.normalLength, p.isManual, p.isB2B, 'front');
+  const back  = computeAllSections(p.sectionHeights, p.maxSpacing, p.manualCounts, p.endLength, p.normalLength, p.isManual, p.isB2B, 'back');
+  return {front, back};
+}
+
+// Finds the closest Front-strut/Back-strut pair by centerline distance &mdash; the pair most
+// at risk of colliding once both boards are pressed together back-to-back. Works on any two
+// arrays of {type, posFromBottom} objects (main panel struts or a drop tag's two-strut list).
+function findTightestB2BPair(front, back){
+  let tightest = null;
+  front.forEach(f=>{
+    back.forEach(b=>{
+      const gap = Math.abs(f.posFromBottom - b.posFromBottom);
+      if(!tightest || gap < tightest.gap) tightest = {gap, front:f, back:b};
+    });
+  });
+  return tightest;
+}
+
 function buildSectionInputs(panelEl){
   const n = getNumSections(panelEl);
   const container = panelEl.querySelector('.sectionInputs');
@@ -1657,9 +1686,11 @@ function computeAllSections(sectionHeights, maxSpacing, manualCounts, endLength,
 // Labels each strut's position relative to the nearest sensible reference point: the bottom
 // edge for the bottom-most section, the top edge for the top-most section, and the joiner
 // below for any middle section &mdash; matching how struts are actually marked out on the shop
-// floor. The printed number is the ruler mark (design centerline minus half the strut's
-// thickness, per rulerMark) so that marking-and-edging the usual way lands the strut exactly
-// where the design intends &mdash; Joiners are printed at the raw position, uncorrected.
+// floor. Two numbers are kept, clearly separate: centerLabel is the raw design centerline (the
+// original calculation), edgeLabel is the ruler mark (centerLabel minus half the strut's
+// thickness, per rulerMark) for whoever marks out by edging the strut to the tape. Joiners
+// print the same value in both, flagged, since they sit flush on the seam &mdash; not measured
+// out from a point.
 function attachLocalLabels(struts, physicalHeights, height, stiffType){
   const n = physicalHeights.length;
   const cumStarts = [0];
@@ -1674,7 +1705,10 @@ function attachLocalLabels(struts, physicalHeights, height, stiffType){
     } else {
       raw = s.posFromBottom - cumStarts[i]; ref = 'from joiner';
     }
-    s.localLabel = `${round2(rulerMark(raw, stiffType, s.type))}mm ${ref}`;
+    s.centerLabel = `${round2(raw)}mm ${ref}`;
+    s.edgeLabel = s.type === 'Joiner'
+      ? `Flush (no mark)`
+      : `${round2(rulerMark(raw, stiffType, s.type))}mm ${ref}`;
   });
 }
 
@@ -1735,7 +1769,10 @@ function computeChevronStruts(width, height, isDoubleTaper, pointCut, pointCutLe
       ? width - 100 - (pointCutLeft+pointCutRight)*ratio
       : width - 100 - pointCut*ratio);
     const type = (k===0 || k===sec.n) ? 'End' : 'Normal';
-    struts.push({type, length, posFromBottom, sectionIndex:0, localLabel: `${round2(rulerMark(posFromBottom, stiffType, type))}mm from bottom`});
+    struts.push({type, length, posFromBottom, sectionIndex:0,
+      centerLabel: `${round2(posFromBottom)}mm from bottom`,
+      edgeLabel: `${round2(rulerMark(posFromBottom, stiffType, type))}mm from bottom`
+    });
   }
   struts.bumpedCount = sec.bumped ? (sec.n - (manualCount+1)) : 0;
   return struts;
@@ -1875,8 +1912,10 @@ function calculate(){
 
     const buildBoard = (label, inset) => {
       const struts = [
-        {type:'Normal', length:dtLength, posFromBottom: inset, localLabel: `${round2(rulerMark(inset, dtStiffType, 'Normal'))}mm from bottom`},
-        {type:'Normal', length:dtLength, posFromBottom: dtHeight-inset, localLabel: `${round2(rulerMark(inset, dtStiffType, 'Normal'))}mm from top`}
+        {type:'Normal', length:dtLength, posFromBottom: inset,
+          centerLabel: `${round2(inset)}mm from bottom`, edgeLabel: `${round2(rulerMark(inset, dtStiffType, 'Normal'))}mm from bottom`},
+        {type:'Normal', length:dtLength, posFromBottom: dtHeight-inset,
+          centerLabel: `${round2(inset)}mm from top`, edgeLabel: `${round2(rulerMark(inset, dtStiffType, 'Normal'))}mm from top`}
       ];
       return {label, dtWidth, dtHeight, dtRadius, dtLength, dtStruts:struts, stiffType:dtStiffType, isDtB2B, offsetSide:'front', isManualDt:false};
     };
@@ -1888,8 +1927,10 @@ function calculate(){
       const manualTop = parseFloat(dtEl.querySelector('.dtManualTop').value||0);
       const manualBottom = parseFloat(dtEl.querySelector('.dtManualBottom').value||0);
       const struts = [
-        {type:'Normal', length:dtLength, posFromBottom: manualBottom, localLabel: `${round2(rulerMark(manualBottom, dtStiffType, 'Normal'))}mm from bottom`},
-        {type:'Normal', length:dtLength, posFromBottom: dtHeight-manualTop, localLabel: `${round2(rulerMark(manualTop, dtStiffType, 'Normal'))}mm from top`}
+        {type:'Normal', length:dtLength, posFromBottom: manualBottom,
+          centerLabel: `${round2(manualBottom)}mm from bottom`, edgeLabel: `${round2(rulerMark(manualBottom, dtStiffType, 'Normal'))}mm from bottom`},
+        {type:'Normal', length:dtLength, posFromBottom: dtHeight-manualTop,
+          centerLabel: `${round2(manualTop)}mm from top`, edgeLabel: `${round2(rulerMark(manualTop, dtStiffType, 'Normal'))}mm from top`}
       ];
       dtBoards.push({label, dtWidth, dtHeight, dtRadius, dtLength, dtStruts:struts, stiffType:dtStiffType, isDtB2B, isManualDt:true});
     } else {
@@ -1930,7 +1971,8 @@ function buildScheduleRows(d){
         <td><span class="swatch" style="background:${swatchColor(s.type)}"></span>${p.label}</td>
         <td>${typeLabel(s.type, p.stiffType)}</td>
         <td class="mono">${round2(s.length)}</td>
-        <td class="mono">${s.localLabel}</td>
+        <td class="mono">${s.centerLabel}</td>
+        <td class="mono" style="color:var(--good); font-weight:600;">${s.edgeLabel}</td>
         <td class="mono">${gap}${next?'mm':''}</td>
       </tr>`;
     }
@@ -1946,7 +1988,8 @@ function buildScheduleRows(d){
           <td><span class="swatch" style="background:${swatchColor(s.type)}"></span>${board.label}</td>
           <td>${typeLabel(s.type, board.stiffType)}</td>
           <td class="mono">${round2(s.length)}</td>
-          <td class="mono">${s.localLabel}</td>
+          <td class="mono">${s.centerLabel}</td>
+          <td class="mono" style="color:var(--good); font-weight:600;">${s.edgeLabel}</td>
           <td class="mono">${gap}</td>
         </tr>`;
       }
@@ -1998,6 +2041,39 @@ function renderResults(d){
         warnHtml += `<div class="warn-box">${p.label}: spacing of ${round2(gap)}mm exceeds the ${p.maxSpacing}mm maximum.</div>`;
       }
     }
+    // B2B due diligence: Front and Back are the two mounting states of this same board spec,
+    // sharing one base &mdash; check every Front strut against every Back strut so a collision
+    // once they're pressed together back-to-back gets caught here, not on the shop floor.
+    if(p.isB2B){
+      const need = STRUT_THICKNESS[p.stiffType] || STRUT_THICKNESS.A;
+      if(p.isManualOffset){
+        warnHtml += `<div class="warn-box">${p.label}: manual offset is in use, so Front/Back clearance isn't auto-checked &mdash; confirm by hand that this board's struts won't hit its B2B partner's (need &ge; ${need}mm between any two strut centerlines for ${p.stiffType}-struts).</div>`;
+      } else {
+        const {front, back} = computeBothOffsetSides(p);
+        const tightest = findTightestB2BPair(front, back);
+        if(tightest && tightest.gap < need){
+          warnHtml += `<div class="warn-box">${p.label}: B2B COLLISION RISK &mdash; the Front board's ${tightest.front.type} strut (${round2(tightest.front.posFromBottom)}mm from the bottom) and the Back board's ${tightest.back.type} strut (${round2(tightest.back.posFromBottom)}mm from the bottom) would land only ${round2(tightest.gap)}mm apart &mdash; ${p.stiffType}-struts need at least ${need}mm clearance. Adjust the max spacing or strut count before cutting.</div>`;
+        } else if(tightest){
+          warnHtml += `<div class="warn-box" style="background:rgba(95,209,146,.1); border-color:var(--good); color:var(--good);">${p.label}: B2B clearance checked &mdash; closest Front/Back strut pair is ${round2(tightest.gap)}mm apart (need &ge; ${need}mm for ${p.stiffType}-struts). No collision expected.</div>`;
+        }
+      }
+    }
+  });
+  d.dtBoards && d.dtBoards.forEach(board=>{
+    if(!board.isDtB2B) return;
+    const need = STRUT_THICKNESS[board.stiffType] || STRUT_THICKNESS.A;
+    if(board.isManualDt){
+      warnHtml += `<div class="warn-box">${board.label}: manual offset is in use, so Front/Back clearance isn't auto-checked &mdash; confirm by hand that this tag's struts won't hit its B2B partner's (need &ge; ${need}mm between any two strut centerlines for ${board.stiffType}-struts).</div>`;
+    } else {
+      const front = [{type:'Normal', posFromBottom:50}, {type:'Normal', posFromBottom: board.dtHeight-50}];
+      const back  = [{type:'Normal', posFromBottom:85}, {type:'Normal', posFromBottom: board.dtHeight-85}];
+      const tightest = findTightestB2BPair(front, back);
+      if(tightest.gap < need){
+        warnHtml += `<div class="warn-box">${board.label}: B2B COLLISION RISK &mdash; the Front strut (${round2(tightest.front.posFromBottom)}mm from the bottom) and the Back strut (${round2(tightest.back.posFromBottom)}mm from the bottom) would land only ${round2(tightest.gap)}mm apart &mdash; ${board.stiffType}-struts need at least ${need}mm clearance.</div>`;
+      } else {
+        warnHtml += `<div class="warn-box" style="background:rgba(95,209,146,.1); border-color:var(--good); color:var(--good);">${board.label}: B2B clearance checked &mdash; closest Front/Back strut pair is ${round2(tightest.gap)}mm apart (need &ge; ${need}mm for ${board.stiffType}-struts). No collision expected.</div>`;
+      }
+    }
   });
   document.getElementById('mainWarnings').innerHTML = warnHtml;
 
@@ -2044,8 +2120,10 @@ function toggleDtOffsetSide(dtIdx){
   board.offsetSide = (board.offsetSide === 'back') ? 'front' : 'back';
   const inset = board.offsetSide === 'back' ? 85 : 50;
   board.dtStruts = [
-    {type:'Normal', length:board.dtLength, posFromBottom: inset, localLabel: `${round2(rulerMark(inset, board.stiffType, 'Normal'))}mm from bottom`},
-    {type:'Normal', length:board.dtLength, posFromBottom: board.dtHeight-inset, localLabel: `${round2(rulerMark(inset, board.stiffType, 'Normal'))}mm from top`}
+  {type:'Normal', length:board.dtLength, posFromBottom: inset,
+    centerLabel: `${round2(inset)}mm from bottom`, edgeLabel: `${round2(rulerMark(inset, board.stiffType, 'Normal'))}mm from bottom`},
+  {type:'Normal', length:board.dtLength, posFromBottom: board.dtHeight-inset,
+    centerLabel: `${round2(inset)}mm from top`, edgeLabel: `${round2(rulerMark(inset, board.stiffType, 'Normal'))}mm from top`}
   ];
 
   renderResults(lastCalc);
@@ -2098,7 +2176,8 @@ function buildMainSVG(d){
     lines += `
       <line x1="${xStart}" y1="${y}" x2="${xEnd}" y2="${y}" stroke="${color}" stroke-width="${strokeW}" stroke-linecap="round"/>
       <text x="${x0+panelW+16}" y="${y+6}" fill="var(--text)" font-size="19" font-family="IBM Plex Mono, monospace"><tspan font-weight="700">${lengthLabel}</tspan> <tspan fill="var(--text-dim)" font-size="15">&mdash; ${d.stiffType}-strut ${typeLabelText}</tspan></text>
-      <text x="${x0-18}" y="${y+6}" fill="var(--text)" font-weight="700" font-size="19" text-anchor="end" font-family="IBM Plex Mono, monospace">${s.localLabel}</text>
+      <text x="${x0-18}" y="${y-4}" fill="var(--text)" font-weight="700" font-size="16" text-anchor="end" font-family="IBM Plex Mono, monospace">C ${s.centerLabel}</text>
+      <text x="${x0-18}" y="${y+15}" fill="var(--good)" font-weight="700" font-size="16" text-anchor="end" font-family="IBM Plex Mono, monospace">R ${s.edgeLabel}</text>
     `;
   });
 
@@ -2112,6 +2191,7 @@ function buildMainSVG(d){
     lines += `<text x="${x0+panelW/2}" y="${midY+5}" fill="var(--text-dim)" font-size="15" text-anchor="middle" font-family="IBM Plex Mono, monospace">${gap}mm spacing</text>`;
   }
 
+  const legend = `<text x="${x0}" y="46" fill="var(--text-dim)" font-size="13" text-anchor="start" font-family="Inter, sans-serif">C = Center (design) &nbsp;|&nbsp; <tspan fill="var(--good)">R = Ruler mark (edge the strut to this)</tspan></text>`;
   const joinerCount = d.struts.filter(s=>s.type==='Joiner').length;
   const splitNote = joinerCount>0 ? `<text x="${x0}" y="${y0-16}" fill="var(--joiner-color)" font-size="16" text-anchor="start">${joinerCount} joiner${joinerCount>1?'s':''} across ${d.numSections} sections</text>` : '';
   const b2bNote = d.isManualOffset ? `<text x="${x0+(joinerCount>0?280:0)}" y="${y0-16}" fill="var(--joiner-color)" font-size="16" text-anchor="start">Manual offset${d.isB2B ? ' (B2B)' : ''}</text>` : (d.isB2B ? `<text x="${x0+(joinerCount>0?280:0)}" y="${y0-16}" fill="var(--joiner-color)" font-size="16" text-anchor="start">B2B, Offset: ${d.offsetSide === 'back' ? 'Back (150mm bottom / 90mm top)' : 'Front (90mm bottom / 150mm top)'}</text>` : '');
@@ -2121,6 +2201,7 @@ function buildMainSVG(d){
     <text x="${x0+panelW/2}" y="24" fill="var(--amber)" font-size="20" text-anchor="middle" font-weight="700" font-family="Inter, sans-serif">${d.width}mm width &times; ${d.height}mm high</text>
     <rect x="${x0}" y="${y0}" width="${panelW}" height="${panelH}" rx="${Math.min(26, panelH/8)}" fill="var(--panel-svg)" stroke="var(--line)" stroke-width="2"/>
     ${lines}
+    ${legend}
     ${splitNote}
     ${b2bNote}
   </svg>`;
@@ -2191,7 +2272,8 @@ function buildChevronSVG(d){
     lines += `
       <line x1="${xStart}" y1="${y}" x2="${xEnd}" y2="${y}" stroke="${color}" stroke-width="${strokeW}" stroke-linecap="round"/>
       <text x="${x0+panelW+16}" y="${y+6}" fill="var(--text)" font-size="19" font-family="IBM Plex Mono, monospace"><tspan font-weight="700">${lengthLabel}</tspan> <tspan fill="var(--text-dim)" font-size="15">&mdash; ${d.stiffType}-strut ${s.type}</tspan></text>
-      <text x="${x0-18}" y="${y+6}" fill="var(--text)" font-weight="700" font-size="19" text-anchor="end" font-family="IBM Plex Mono, monospace">${s.localLabel}</text>
+      <text x="${x0-18}" y="${y-4}" fill="var(--text)" font-weight="700" font-size="16" text-anchor="end" font-family="IBM Plex Mono, monospace">C ${s.centerLabel}</text>
+      <text x="${x0-18}" y="${y+15}" fill="var(--good)" font-weight="700" font-size="16" text-anchor="end" font-family="IBM Plex Mono, monospace">R ${s.edgeLabel}</text>
     `;
   });
 
@@ -2204,6 +2286,7 @@ function buildChevronSVG(d){
     lines += `<text x="${x0+panelW/2}" y="${midY+5}" fill="var(--text-dim)" font-size="15" text-anchor="middle" font-family="IBM Plex Mono, monospace">${gap}mm spacing</text>`;
   }
 
+  const legend = `<text x="${x0}" y="46" fill="var(--text-dim)" font-size="13" text-anchor="start" font-family="Inter, sans-serif">C = Center (design) &nbsp;|&nbsp; <tspan fill="var(--good)">R = Ruler mark (edge the strut to this)</tspan></text>`;
   const pointCutNote = d.isDoubleTaper
     ? `Point cut: ${round2(d.pointCutLeft)}mm (L) / ${round2(d.pointCutRight)}mm (R) &nbsp;|&nbsp; Corner Radius ${d.cropDeg}mm`
     : `Point cut: ${round2(d.pointCut)}mm (points ${d.pointDir}) &nbsp;|&nbsp; Corner Radius ${d.cropDeg}mm`;
@@ -2212,6 +2295,7 @@ function buildChevronSVG(d){
   return `
   <svg viewBox="0 0 ${svgW} ${svgH}" width="${svgW}" height="${svgH}" xmlns="http://www.w3.org/2000/svg">
     <text x="${x0+panelW/2}" y="24" fill="var(--amber)" font-size="20" text-anchor="middle" font-weight="700" font-family="Inter, sans-serif">${d.width}mm width &times; ${d.height}mm high</text>
+    ${legend}
     <text x="${x0}" y="${y0-16}" fill="var(--joiner-color)" font-size="15" text-anchor="start" font-family="Inter, sans-serif">${pointCutNote}${b2bNote}</text>
     <polygon points="${pointsAttr}" fill="var(--panel-svg)" stroke="var(--line)" stroke-width="2"/>
     ${lines}
@@ -2237,11 +2321,14 @@ function buildDropTagSVG(d){
     lines += `
       <line x1="${xStart}" y1="${y}" x2="${xEnd}" y2="${y}" stroke="var(--normal-color)" stroke-width="8" stroke-linecap="round"/>
       <text x="${x0+w+16}" y="${y+6}" fill="var(--text)" font-size="19" font-family="IBM Plex Mono, monospace"><tspan font-weight="700">${round2(s.length)}mm</tspan> <tspan fill="var(--text-dim)" font-size="15">&mdash; ${d.stiffType}-strut Normal</tspan></text>
-      <text x="${x0-18}" y="${y+6}" fill="var(--text)" font-weight="700" font-size="19" text-anchor="end" font-family="IBM Plex Mono, monospace">${s.localLabel || (round2(rulerMark(s.posFromBottom, d.stiffType, s.type))+'mm from bottom')}</text>
+      <text x="${x0-18}" y="${y-4}" fill="var(--text)" font-weight="700" font-size="15" text-anchor="end" font-family="IBM Plex Mono, monospace">C ${s.centerLabel || (round2(s.posFromBottom)+'mm from bottom')}</text>
+      <text x="${x0-18}" y="${y+13}" fill="var(--good)" font-weight="700" font-size="15" text-anchor="end" font-family="IBM Plex Mono, monospace">R ${s.edgeLabel || (round2(rulerMark(s.posFromBottom, d.stiffType, s.type))+'mm from bottom')}</text>
     `;
   });
 
-  const b2bNote = (d.isDtB2B && !d.isManualDt) ? `<text x="${x0}" y="${y0-14}" fill="var(--joiner-color)" font-size="15" text-anchor="start" font-family="Inter, sans-serif">B2B, Offset: ${d.offsetSide === 'back' ? 'Back (85mm from top/bottom)' : 'Front (50mm from top/bottom)'}</text>` : (d.isManualDt ? `<text x="${x0}" y="${y0-14}" fill="var(--joiner-color)" font-size="15" text-anchor="start" font-family="Inter, sans-serif">Manual offset${d.isDtB2B ? ' (B2B)' : ''}</text>` : '');
+  const legendText = `C = Center (design) &nbsp;|&nbsp; R = Ruler mark (edge)`;
+  const b2bText = (d.isDtB2B && !d.isManualDt) ? ` &mdash; B2B, Offset: ${d.offsetSide === 'back' ? 'Back (85mm from top/bottom)' : 'Front (50mm from top/bottom)'}` : (d.isManualDt ? ` &mdash; Manual offset${d.isDtB2B ? ' (B2B)' : ''}` : '');
+  const b2bNote = `<text x="${x0}" y="${y0-14}" fill="var(--text-dim)" font-size="12" text-anchor="start" font-family="Inter, sans-serif">${legendText}<tspan fill="var(--joiner-color)">${b2bText}</tspan></text>`;
 
   return `
   <svg viewBox="0 0 ${svgW} ${svgH}" width="${svgW}" height="${svgH}" xmlns="http://www.w3.org/2000/svg">
