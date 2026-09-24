@@ -814,121 +814,16 @@ html,body{margin:0;padding:0;background:var(--charcoal);font-family:'Inter',sans
 .al-app .cc-head{padding:3px 6px;font-size:10px;flex-wrap:wrap;line-height:1.3;}
 .al-app .cc-body{padding:3px;}
 .al-app .legend-note{font-size:8.5px;padding:4px 6px;line-height:1.25;}
-.al-app /* SUMMARY TO CUT — 5 compact boxes across the full page width */
-    .stc-wrap{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin-top:2px;}
+.al-app /* SUMMARY TO CUT — plain-text recap after the diagrams */
+    .stc-wrap{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:6px;}
 .al-app .stc-block{border:1px solid #999;break-inside:avoid;page-break-inside:avoid;}
-.al-app .stc-head{background:var(--charcoal);color:#fff;font-family:'JetBrains Mono',monospace;font-size:7.5pt;font-weight:700;padding:2px 4px;line-height:1.25;}
-.al-app .stc-line{display:flex;flex-wrap:wrap;justify-content:space-between;column-gap:4px;padding:1.5px 4px;font-family:'JetBrains Mono',monospace;font-size:7.5pt;line-height:1.25;border-top:1px solid #e2e2e2;}
-.al-app .stc-label{font-weight:700;color:var(--text);font-size:7.5pt;}
-.al-app .stc-dims{color:var(--text);font-weight:700;font-size:7.5pt;margin-left:auto;white-space:nowrap;}
-.al-app .section-title.stc-title{margin:8px 0 2px !important;font-size:11pt;}
+.al-app .stc-head{background:var(--charcoal);color:#fff;font-family:'JetBrains Mono',monospace;font-size:12pt;font-weight:700;padding:5px 9px;}
+.al-app .stc-line{display:flex;justify-content:space-between;gap:12px;padding:3.5px 9px;font-family:'JetBrains Mono',monospace;font-size:12pt;border-top:1px solid #e2e2e2;}
+.al-app .stc-label{font-weight:700;color:var(--text);font-size:12pt;}
+.al-app .stc-dims{color:var(--text);font-weight:600;font-size:12pt;}
 }
 
 </style>
-<style>
-@media print{ html,body{background:#fff !important;} }
-/* ===== DARK "WORKSHOP" THEME FOR TABS 2 & 3 — matches Tab 1 (Freeway Board) =====
-   Screen only: printed sheets keep their original white-paper look. */
-@media screen{
-  .stp-app, .al-app{
-    --bg:#181c1f; --panel:#20262b; --panel-2:#262d33; --line:#343c42;
-    --amber:#ffc23c; --amber-dim:#8a6a1f;
-    --text:#e9edf0; --text-mute:#9aa5ab; --steel:#9aa5ab; --steel-light:#262d33;
-    --orange:#ffc23c; --orange-dark:#ffc23c;
-    --green:#5fd192; --red:#ff8a5c; --blue:#7fb8c9; --purple:#b39ddb; --yellow:#ffc23c;
-    background:var(--bg); color:var(--text);
-  }
-
-  /* Page header — same "plate" look as Tab 1 */
-  .stp-app header, .al-app header{
-    background:linear-gradient(180deg,#23292e,#1c2124);
-    border-bottom:3px solid var(--amber); color:var(--text);
-  }
-  .stp-app header .tag, .al-app header .tag{color:var(--text-mute);}
-  .stp-app .settings-bar, .al-app .settings-bar{background:var(--panel);border:1px solid var(--line);}
-  .stp-app .settings-bar input[type=number], .al-app .settings-bar input[type=number],
-  .stp-app .seam-toggle, .al-app .seam-toggle{background:var(--panel-2);border-color:var(--line);color:var(--text);}
-  .stp-app .seam-toggle label, .al-app .seam-toggle label{color:var(--text);}
-  .stp-app .seam-toggle input, .al-app .seam-toggle input{accent-color:var(--amber);}
-
-  /* Cards, tables & boxes */
-  .stp-app .panel, .al-app .panel,
-  .stp-app .stat, .al-app .stat,
-  .stp-app .order-table, .al-app .order-table,
-  .stp-app .bar-card, .al-app .cut-card,
-  .stp-app .bundle-table, .al-app .sheets-needed,
-  .stp-app .offcut-summary, .al-app .offcut-summary,
-  .stp-app .order-note, .al-app .order-note,
-  .al-app .collapsible,
-  .stp-app .modal-box, .al-app .modal-box,
-  .stp-app .piece-card, .al-app .piece-card,
-  .stp-app .piece-hint, .al-app .seg-item, .al-app .offcut-preview{
-    background:var(--panel); border-color:var(--line); color:var(--text);
-  }
-  .al-app .sheets-needed{border-color:var(--amber);}
-  .stp-app .panel-head, .al-app .panel-head, .al-app .collapsible-head{background:var(--panel-2);border-color:var(--line);}
-  .al-app .collapsible-head:hover{background:#2c343a;}
-  .stp-app .panel-head h2, .al-app .panel-head h2{color:var(--amber);}
-  .stp-app .section-title, .al-app .section-title{color:var(--text);border-left-color:var(--amber);}
-  .stp-app .stat .num-big, .al-app .stat .num-big{color:var(--text);}
-  .stp-app .modal-box h3, .al-app .modal-box h3,
-  .stp-app .modal-field label, .al-app .modal-field label,
-  .stp-app .piece-hint b, .stp-app .bulk-hint code{color:var(--text);}
-  .stp-app .cc-head, .al-app .cc-head{background:#111417;}
-
-  .stp-app th, .stp-app td, .al-app th, .al-app td{border-bottom-color:var(--line) !important;}
-  .stp-app thead th, .al-app thead th{background:var(--panel-2);color:var(--text-mute);}
-  .stp-app .bundle-table tr.row-needs-buy{background:rgba(255,138,92,.10);}
-  .stp-app .bundle-table tr.row-covered{background:rgba(95,209,146,.08);}
-  .stp-app .bundle-table tr.row-total{background:#111417;}
-  .stp-app .blocked-table, .al-app .blocked-table{background:var(--panel);border-color:rgba(255,138,92,.5);}
-  .stp-app .blocked-table thead, .al-app .blocked-table thead{background:rgba(255,138,92,.12);}
-  .stp-app #bulkParseResult .parse-warn{background:rgba(255,138,92,.12);border-color:rgba(255,138,92,.5);}
-
-  /* Inputs */
-  .stp-app input[type=text], .stp-app input[type=number], .stp-app select, .stp-app textarea,
-  .al-app input[type=text], .al-app input[type=number], .al-app select, .al-app textarea{
-    background:var(--panel-2) !important; color:var(--text) !important; border-color:var(--line) !important;
-  }
-  .stp-app input:focus, .stp-app select:focus, .stp-app textarea:focus,
-  .al-app input:focus, .al-app select:focus, .al-app textarea:focus{outline:none;border-color:var(--amber) !important;}
-  .al-app .seg-item.auto input{background:#1c2124;color:var(--text-mute);}
-  .stp-app input[type=checkbox], .al-app input[type=checkbox]{accent-color:var(--amber);}
-
-  /* Buttons */
-  .stp-app .add-row, .al-app .add-row{background:var(--panel-2);border-color:var(--line);color:var(--text);}
-  .stp-app .add-row:hover, .al-app .add-row:hover{background:#2c343a;border-color:var(--amber);}
-  .stp-app .reset-btn, .al-app .reset-btn, .al-app .reset-btn-outline{background:transparent;color:var(--amber);border-color:var(--amber);}
-  .stp-app .reset-btn:hover, .al-app .reset-btn:hover, .al-app .reset-btn-outline:hover{background:var(--amber);color:#1c1a12;}
-  .stp-app .calc-btn, .al-app .calc-btn{background:var(--amber);color:#1c1a12;box-shadow:0 4px 0 var(--amber-dim);}
-  .stp-app .calc-btn:hover, .al-app .calc-btn:hover{background:#ffd166;}
-  .stp-app .calc-btn:active, .al-app .calc-btn:active{box-shadow:0 1px 0 var(--amber-dim);}
-  .stp-app .modal-confirm, .al-app .modal-confirm{background:var(--amber);color:#1c1a12;}
-  .stp-app .modal-cancel, .al-app .modal-cancel{background:transparent;border-color:var(--line);color:var(--text-mute);}
-  .stp-app .multiplier-badge{color:#1c1a12;}
-  .stp-app .calc-btn[style*="charcoal"], .al-app .calc-btn[style*="charcoal"]{
-    background:transparent !important; color:var(--amber); border:2px solid var(--amber); box-shadow:none !important;
-  }
-  .stp-app .calc-btn[style*="charcoal"]:hover, .al-app .calc-btn[style*="charcoal"]:hover{background:rgba(255,194,60,.12) !important;}
-
-  /* Status pills & plan boxes — tinted to sit on dark */
-  .stp-app .pill.a{background:rgba(127,184,201,.15);}
-  .stp-app .pill.b{background:rgba(95,209,146,.14);}
-  .stp-app .pill.ja, .stp-app .pill.jb{background:rgba(255,194,60,.15);color:var(--amber);}
-  .stp-app .pill.z{background:rgba(179,157,219,.16);}
-  .stp-app .pill.sp150, .stp-app .pill.sp200{background:rgba(154,165,171,.16);color:var(--text-mute);}
-  .al-app .pill.offcut, .al-app .pill.join, .al-app .pill.connecting{background:rgba(255,194,60,.15);color:var(--amber);}
-  .al-app .pill.sheet{background:rgba(95,209,146,.14);}
-  .al-app .pill.seam{background:rgba(127,184,201,.15);}
-  .al-app .pill.blocked{background:rgba(255,138,92,.14);}
-  .al-app .plan-box.none{background:rgba(95,209,146,.10);}
-  .al-app .plan-box.joiner{background:rgba(127,184,201,.10);border-color:rgba(127,184,201,.4);}
-  .al-app .plan-box.connecting{background:rgba(255,194,60,.08);border-color:rgba(255,194,60,.4);}
-  .al-app .plan-box.blocked{background:rgba(255,138,92,.10);border-color:rgba(255,138,92,.5);}
-  .al-app .plan-title.connecting{color:var(--amber);}
-}
-</style>
-
 </head>
 
 <body>
@@ -1993,9 +1888,9 @@ function calculate(){
   // 50mm/85mm inset (Front/Back) instead of the usual height-scaled value, picked via the
   // Offset Calculate button rather than auto-generating a second board.
   let dtBoards = [];
+  let skippedDtLabels = [];
   const dtStiffType = panelResults.length ? panelResults[0].stiffType : 'B';
   const dropTagEls = Array.from(document.querySelectorAll('#dropTagsList .panel-instance'));
-  const hasDroptag = dropTagEls.length > 0;
 
   // Shorter drop tags need a proportionally smaller inset -- a fixed 65mm on a 150mm-tall tag
   // leaves only 20mm between the two struts, which also crowds their labels into each other
@@ -2011,6 +1906,13 @@ function calculate(){
     const dtLabel = dtEl.querySelector('.panel-instance-header h3').textContent; // "Drop Tag 1", "Drop Tag 2", etc.
     const dtWidth = parseFloat(dtEl.querySelector('.dtWidth').value);
     const dtHeight = parseFloat(dtEl.querySelector('.dtHeight').value);
+    // A Drop Tag row with no width/height entered yet (blank field, or a leftover empty row
+    // from a previous import) skips calculation entirely rather than printing "NaNmm" &mdash;
+    // fail honestly instead of showing a broken number that looks like real output.
+    if(!(dtWidth > 0) || !(dtHeight > 0)){
+      skippedDtLabels.push(dtLabel);
+      return;
+    }
     const dtRadius = parseFloat(dtEl.querySelector('.dtRadius').value);
     const dtLength = round5(dtWidth - 100);
     const isDtB2B = dtEl.querySelector('.isDtB2B').checked;
@@ -2043,8 +1945,9 @@ function calculate(){
       dtBoards.push(buildBoard(label, inset));
     }
   });
+  const hasDroptag = dtBoards.length > 0;
 
-  renderResults({panels:panelResults, hasDroptag, dtBoards});
+  renderResults({panels:panelResults, hasDroptag, dtBoards, skippedDtLabels});
 
   document.getElementById('fwbResults').classList.add('show');
   document.getElementById('fwbResults').scrollIntoView({behavior:'smooth'});
@@ -2135,6 +2038,9 @@ function renderResults(d){
 
   // Info/warnings per panel: manual total bumped up to satisfy max spacing
   let warnHtml = '';
+  if(d.skippedDtLabels && d.skippedDtLabels.length){
+    warnHtml += `<div class="warn-box">${d.skippedDtLabels.join(', ')} ${d.skippedDtLabels.length>1?'have':'has'} no width/height entered yet, so ${d.skippedDtLabels.length>1?'they were':'it was'} left out of the calculation &mdash; fill it in or remove the row.</div>`;
+  }
   d.panels.forEach(p=>{
     if(p.enteredTotal !== null && p.bumpedCount > 0){
       warnHtml += `<div class="warn-box" style="background:rgba(95,209,146,.1); border-color:var(--good); color:var(--good);">${p.label}: you entered ${p.enteredTotal}, but that left gaps wider than the ${p.maxSpacing}mm maximum spacing &mdash; ${p.bumpedCount} extra strut${p.bumpedCount>1?'s were':' was'} added automatically (${p.struts.length} total) so no spacing exceeds the maximum.</div>`;
@@ -2604,21 +2510,7 @@ async function printSchedule(){
 
   win.document.write(buildPrintHTML(d, drawingImgSrc, drawingFileName, cornerCropImgSrc));
   win.document.close();
-  // Auto-close the print tab as soon as the print dialog is finished
-  // (printed OR cancelled), so you land straight back on the app with the
-  // "Import struts?" prompt already waiting.
-  let printStarted = false;
-  const closePrintTab = () => { try { if(win && !win.closed) win.close(); } catch(e){} };
-  win.addEventListener('afterprint', () => setTimeout(closePrintTab, 50));
-  win.onload = () => { win.focus(); printStarted = true; win.print(); };
-  // Backup: if the browser never reports "afterprint", close the print tab
-  // the moment you come back to this app tab.
-  const onBackToApp = () => {
-    if(!printStarted) return;
-    window.removeEventListener('focus', onBackToApp);
-    closePrintTab();
-  };
-  window.addEventListener('focus', onBackToApp);
+  win.onload = () => { win.focus(); win.print(); };
 
   // Let the app shell know this board's been sent to print — it offers to
   // import these struts into the Strut Calculator right away, alongside the
@@ -5199,7 +5091,7 @@ window.STP = {
     <div class="section-title">Cut Diagrams</div>
     <div class="cut-grid" id="alCutGrid"></div>
 
-    <div class="section-title print-only stc-title">Summary To Cut</div>
+    <div class="section-title print-only" style="margin-top:14px;">Summary To Cut</div>
     <div class="print-only stc-wrap" id="alSummaryToCut"></div>
 
   </div>
@@ -6160,24 +6052,4 @@ window.Shell = (function(){
   // instead of silently stalling the flow.
   document.getElementById('importModalOverlay').addEventListener('click', function(e){
     if(e.target.id === 'importModalOverlay') skipImport();
-  });
-  document.getElementById('alImportModalOverlay').addEventListener('click', function(e){
-    if(e.target.id === 'alImportModalOverlay') skipAlImport();
-  });
-
-  // Wire the Freeway Board print flow: the import prompt now fires the
-  // moment Printable PDF is clicked, alongside the print tab opening —
-  // Edge opens that as a normal tab rather than a popup window, so waiting
-  // for it to be "closed" isn't reliable and the person shouldn't have to
-  // close it first just to see this prompt.
-  window.FWB.setAfterPrintHandler(function(){
-    if(window.FWB.hasCalculatedStruts()) openImportModal();
-  });
-
-  return {showTab, skipImport, confirmImport, openImportModal, skipAlImport, confirmAlImport};
-})();
-</script>
-
-
-</body>
-</html>
+  }
