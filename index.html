@@ -6052,4 +6052,20 @@ window.Shell = (function(){
   // instead of silently stalling the flow.
   document.getElementById('importModalOverlay').addEventListener('click', function(e){
     if(e.target.id === 'importModalOverlay') skipImport();
-  }
+  });
+
+  // Same rule for the Aluminium prompt: clicking outside counts as "Not now".
+  document.getElementById('alImportModalOverlay').addEventListener('click', function(e){
+    if(e.target.id === 'alImportModalOverlay') skipAlImport();
+  });
+
+  return {
+    showTab, showToast,
+    openImportModal, closeImportModal, skipImport, confirmImport,
+    openAlImportModal, closeAlImportModal, skipAlImport, confirmAlImport
+  };
+})();
+</script>
+
+</body>
+</html>
