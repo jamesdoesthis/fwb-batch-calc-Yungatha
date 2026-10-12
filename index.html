@@ -394,6 +394,281 @@ html,body{margin:0;padding:0;background:var(--charcoal);font-family:'Inter',sans
     body.viewerOpen .wrap{ padding-right:28px; }
   }
 </style>
+<style id="fwbRedesignCss">
+/* ===== FREEWAY BOARD TAB — REDESIGN LAYER (scoped to .fwb-app) =====
+   Sits on top of the older Freeway Board block above. That older block has a few unscoped rules
+   (label, th/td, svg, .card, .reset-btn ...) that the other two tabs also pick up, so it is left
+   exactly as it was; everything below only ever matches inside .fwb-app, so the Strut and
+   Aluminium tabs are untouched. */
+.fwb-app{
+  --line-strong:#46515a;
+  --amber-soft:rgba(255,194,60,.12);
+  --danger:#ff7a63;
+  --danger-soft:rgba(255,122,99,.12);
+  --good-soft:rgba(95,209,146,.11);
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,'Liberation Mono',monospace;
+  --ring:0 0 0 3px rgba(255,194,60,.32);
+  --radius:14px;
+  font-size:16px;
+  line-height:1.45;
+}
+.fwb-app .visually-hidden{position:absolute !important; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;}
+.fwb-app button{font-family:inherit;}
+.fwb-app .mono, .fwb-app td.mono{font-family:var(--mono);}
+.fwb-app :focus-visible{outline:2px solid var(--amber); outline-offset:2px;}
+.fwb-app input:focus-visible, .fwb-app select:focus-visible{outline:none; border-color:var(--amber); box-shadow:var(--ring);}
+@media (prefers-reduced-motion:reduce){ .fwb-app *{animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important;} }
+
+/* ---------- header ---------- */
+.fwb-app header.plate{padding:16px 28px 14px; align-items:center;}
+.fwb-app header.plate h1{font-size:1.35rem;}
+.fwb-app header.plate p{font-size:.84rem; max-width:62ch;}
+.fwb-app .wrap{max-width:1120px; padding:22px 24px 40px;}
+
+/* ---------- buttons ---------- */
+.fwb-app .btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:40px; padding:0 16px;
+  border-radius:9px; border:1px solid var(--line-strong); background:var(--panel-2); color:var(--text);
+  font-size:.88rem; font-weight:600; letter-spacing:.01em; cursor:pointer; white-space:nowrap;
+  transition:border-color .15s, background .15s, color .15s, transform .05s;
+}
+.fwb-app .btn:hover{border-color:var(--amber); color:#fff;}
+.fwb-app .btn:active{transform:translateY(1px);}
+.fwb-app .btn svg{width:16px; height:16px; flex:none; margin:0; display:block; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+.fwb-app .dz-icon svg, .fwb-app .file-loaded-banner svg{margin:0;}
+.fwb-app .btn-primary{background:var(--amber); border-color:var(--amber); color:#1c1a12;}
+.fwb-app .btn-primary:hover{background:#ffd166; border-color:#ffd166; color:#1c1a12;}
+.fwb-app .btn-lg{min-height:50px; padding:0 26px; font-size:1rem;}
+.fwb-app .btn-sm{min-height:32px; padding:0 12px; font-size:.8rem; border-radius:8px;}
+.fwb-app .btn-block{width:100%;}
+.fwb-app .btn-ghost{background:transparent;}
+.fwb-app .btn-danger:hover{border-color:var(--danger); color:var(--danger);}
+.fwb-app .btn[disabled], .fwb-app .btn[aria-disabled="true"]{opacity:.42; cursor:not-allowed; pointer-events:none;}
+.fwb-app .btn-add{width:100%; border-style:dashed; color:var(--amber); background:transparent; min-height:44px;}
+.fwb-app .btn-add:hover{background:var(--amber-soft);}
+
+/* ---------- stepper ---------- */
+.fwb-app .fwb-stepper{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:0 0 20px; padding:0; list-style:none;}
+.fwb-app .fstep{
+  display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--panel); border:1px solid var(--line);
+  border-radius:10px; color:var(--text-dim); font-size:.84rem; font-weight:600; cursor:pointer; text-align:left;
+  transition:border-color .15s, color .15s, background .15s;
+}
+.fwb-app .fstep:hover{border-color:var(--line-strong); color:var(--text);}
+.fwb-app .fstep .fnum{flex:none; width:24px; height:24px; border-radius:50%; display:grid; place-items:center; background:var(--panel-2); border:1px solid var(--line-strong); font:700 .75rem var(--mono); color:var(--text-dim);}
+.fwb-app .fstep small{display:block; font-weight:500; font-size:.7rem; color:var(--text-dim); margin-top:1px;}
+.fwb-app .fstep.current{border-color:var(--amber); background:var(--amber-soft); color:var(--text);}
+.fwb-app .fstep.current .fnum{background:var(--amber); border-color:var(--amber); color:#1c1a12;}
+.fwb-app .fstep.done .fnum{background:var(--good); border-color:var(--good); color:#10241a; font-size:0;}
+.fwb-app .fstep.done .fnum::after{content:'\2713'; font:700 .8rem var(--mono);}
+.fwb-app .fstep.locked{opacity:.45; cursor:not-allowed;}
+
+/* ---------- cards & step headings ---------- */
+.fwb-app .card{border-radius:var(--radius); padding:22px 24px; margin-bottom:18px;}
+.fwb-app .card h2{display:block; font-size:1.02rem; text-transform:none; letter-spacing:0; color:var(--text); margin:0 0 14px; font-weight:700;}
+.fwb-app .card h2::before{display:none;}
+.fwb-app .step-head{display:flex; align-items:flex-start; gap:14px; margin:0 0 16px;}
+.fwb-app .step-head h2{margin:0; font-size:1.1rem; font-weight:700; letter-spacing:0; text-transform:none; color:var(--text); line-height:1.3;}
+.fwb-app .step-num{flex:none; width:30px; height:30px; border-radius:50%; display:grid; place-items:center; background:var(--amber); color:#1c1a12; font:700 .9rem var(--mono); margin-top:-1px;}
+.fwb-app .step-sub{margin:3px 0 0; color:var(--text-dim); font-size:.85rem; line-height:1.5;}
+.fwb-app .step-head .grow{flex:1; min-width:0;}
+.fwb-app .section-label{display:flex; align-items:center; justify-content:space-between; gap:12px; margin:22px 0 10px; font-size:.74rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--text-dim);}
+.fwb-app .section-label:first-child{margin-top:0;}
+
+/* ---------- fields ---------- */
+.fwb-app .field{display:block; margin:0;}
+.fwb-app .field .lbl, .fwb-app .lbl{display:block; font-size:.78rem; font-weight:600; color:var(--text-dim); margin:0 0 6px; letter-spacing:.01em;}
+.fwb-app .field-row{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px;}
+.fwb-app .field-row:first-child{margin-top:0;}
+.fwb-app .stack > * + *{margin-top:14px;}
+.fwb-app input[type=number], .fwb-app select{
+  width:100%; height:42px; padding:0 12px; background:var(--panel-2); border:1px solid var(--line-strong); border-radius:9px;
+  color:var(--text); font:500 .95rem var(--mono); transition:border-color .15s, box-shadow .15s, background .15s;
+}
+.fwb-app select{font-family:'Inter',sans-serif; font-size:.9rem; appearance:none; -webkit-appearance:none; padding-right:34px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%239aa5ab' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 12px center;}
+.fwb-app input[type=number]:hover, .fwb-app select:hover{border-color:#5d6a74;}
+.fwb-app input[type=number]::-webkit-outer-spin-button, .fwb-app input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
+.fwb-app input[type=number]{-moz-appearance:textfield; appearance:textfield;}
+.fwb-app .inwrap{position:relative; display:block;}
+.fwb-app .inwrap input{padding-right:46px;}
+.fwb-app .inwrap .unit{position:absolute; right:13px; top:50%; transform:translateY(-50%); color:var(--text-dim); font:500 .78rem var(--mono); pointer-events:none;}
+.fwb-app input[readonly]{background:transparent; border-style:dashed; color:var(--text-dim); cursor:not-allowed;}
+.fwb-app input.invalid, .fwb-app select.invalid{border-color:var(--danger); background:var(--danger-soft);}
+.fwb-app input.scanned, .fwb-app select.scanned{border-color:var(--amber); box-shadow:inset 0 0 0 1px var(--amber), 0 0 0 3px rgba(255,194,60,.14);}
+.fwb-app .field-msg{margin:6px 0 0; font-size:.78rem; color:var(--danger); line-height:1.35;}
+.fwb-app .hint{font-size:.78rem; color:var(--text-dim); margin-top:8px; line-height:1.5;}
+.fwb-app .check{display:flex; align-items:flex-start; gap:10px; margin:0; cursor:pointer; font-size:.9rem; color:var(--text); line-height:1.4;}
+.fwb-app .check input{flex:none; width:20px; height:20px; margin:1px 0 0; accent-color:var(--amber); cursor:pointer;}
+
+/* grouped blocks inside a panel */
+.fwb-app .group{margin-top:18px; padding:14px 16px 16px; border:1px solid var(--line); border-radius:11px; background:rgba(255,255,255,.015);}
+.fwb-app .group:first-child{margin-top:0;}
+.fwb-app .group-title{margin:0 0 12px; font-size:.7rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--amber);}
+.fwb-app .subblock{border-left:2px solid var(--amber-dim); padding-left:14px; margin-top:12px;}
+
+/* segmented on/off controls (the old Auto / Manual boxes) */
+.fwb-app .toggle-row{display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:3px; margin:0; padding:3px; background:var(--panel-2); border:1px solid var(--line-strong); border-radius:10px;}
+.fwb-app .toggle-btn{flex:none; border:0; background:transparent; color:var(--text-dim); padding:8px 10px; min-height:34px; border-radius:7px; font-size:.84rem; font-weight:600; cursor:pointer; text-align:center; transition:background .15s, color .15s;}
+.fwb-app .toggle-btn:hover:not(.active){color:var(--text); background:rgba(255,255,255,.06);}
+.fwb-app .toggle-btn.active{background:var(--amber); color:#1c1a12; border:0;}
+
+/* help text tucked away until wanted */
+.fwb-app details.help{margin-top:12px; font-size:.82rem; color:var(--text-dim);}
+.fwb-app details.help > summary{cursor:pointer; list-style:none; display:inline-flex; align-items:center; gap:7px; font-weight:600; color:var(--text-dim); border-radius:6px; padding:2px 0;}
+.fwb-app details.help > summary::-webkit-details-marker{display:none;}
+.fwb-app details.help > summary::before{content:'i'; width:16px; height:16px; border-radius:50%; border:1.5px solid currentColor; display:grid; place-items:center; font:700 .66rem var(--mono); flex:none;}
+.fwb-app details.help > summary:hover, .fwb-app details.help[open] > summary{color:var(--amber);}
+.fwb-app details.help .help-body{margin-top:8px; padding:10px 13px; background:rgba(255,255,255,.035); border-left:2px solid var(--line-strong); border-radius:0 8px 8px 0; line-height:1.6;}
+.fwb-app details.help .help-body p{margin:0 0 6px;}
+.fwb-app details.help .help-body p:last-child{margin-bottom:0;}
+
+/* ---------- scan card ---------- */
+.fwb-app .drop-zone{position:relative; padding:0; border:2px dashed var(--line-strong); border-radius:12px; background:rgba(255,255,255,.02);}
+.fwb-app .drop-zone:hover{border-color:#5d6a74;}
+.fwb-app .drop-zone.dragover{border-color:var(--amber); background:var(--amber-soft);}
+.fwb-app .drop-zone:focus-within{border-color:var(--amber); box-shadow:var(--ring);}
+.fwb-app #drawingFileInput{position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; padding:0; z-index:2;}
+.fwb-app .drop-prompt{display:flex; align-items:center; gap:16px; padding:18px 20px; margin:0; pointer-events:none;}
+.fwb-app .dz-icon{flex:none; width:44px; height:44px; border-radius:11px; display:grid; place-items:center; background:var(--amber-soft); border:1px solid var(--amber-dim);}
+.fwb-app .dz-icon svg{width:22px; height:22px; stroke:var(--amber); fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
+.fwb-app .dz-text strong{display:block; font-size:.95rem; color:var(--text);}
+.fwb-app .dz-text span{font-size:.8rem; color:var(--text-dim);}
+.fwb-app .file-loaded-banner{margin:0; border-radius:0 0 10px 10px; border-width:1px 0 0; border-color:rgba(95,209,146,.4); padding:10px 20px; pointer-events:none;}
+.fwb-app .scan-bar{display:flex; align-items:center; gap:14px; margin-top:14px; flex-wrap:wrap;}
+.fwb-app .scan-bar .btn-primary{min-width:180px;}
+.fwb-app #importStatus{margin:0; font-size:.86rem; flex:1; min-width:200px;}
+.fwb-app #importStatus:empty{display:none;}
+.fwb-app #importChecklist{margin-top:14px; border-radius:10px;}
+.fwb-app .scan-preview{display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; margin-top:16px; padding-top:16px; border-top:1px solid var(--line);}
+.fwb-app #importThumb{max-width:180px; max-height:130px; width:auto; height:auto; object-fit:contain; border-radius:8px; border:1px solid var(--line-strong); background:#fff;}
+.fwb-app .scan-preview .side{display:flex; flex-direction:column; gap:8px; flex:1 1 220px; min-width:0;}
+.fwb-app .scan-preview .btnrow{display:flex; gap:8px; flex-wrap:wrap;}
+
+/* review-the-scan banner */
+.fwb-app .scan-review{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:0 0 16px; padding:11px 14px; border-radius:10px; background:var(--amber-soft); border:1px solid var(--amber-dim); font-size:.86rem;}
+.fwb-app .scan-review[hidden]{display:none;}
+.fwb-app .scan-review .msg{flex:1; min-width:200px; color:var(--text);}
+.fwb-app .scan-review.all-clear{background:var(--good-soft); border-color:rgba(95,209,146,.5);}
+
+/* ---------- panel / drop-tag cards ---------- */
+.fwb-app .panel-instance{border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); padding:20px 22px 22px; margin:0 0 16px;}
+.fwb-app .panel-instance:first-child{border-top:1px solid var(--line); margin-top:0; padding-top:20px;}
+.fwb-app .panel-instance-header{display:flex; align-items:center; gap:12px; margin:0 0 16px;}
+.fwb-app .panel-instance-header h3{margin:0; font-size:1rem; color:var(--text); text-transform:none; letter-spacing:0; font-weight:700;}
+.fwb-app .panel-meta{flex:1; min-width:0; color:var(--text-dim); font:500 .78rem var(--mono); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.fwb-app .remove-panel-btn{width:32px; height:32px; border-radius:8px; font-size:1.2rem; flex:none;}
+.fwb-app .panel-grid{display:grid; grid-template-columns:1fr 1fr; gap:0 28px; align-items:start;}
+.fwb-app .panel-grid > .pcol > .group:first-child, .fwb-app .panel-grid > .pcol > .field:first-child{margin-top:0;}
+body.viewerOpen .fwb-app .panel-grid{grid-template-columns:1fr;}
+.fwb-app .sec-wrap{display:grid; grid-template-columns:1fr 74px; gap:14px; margin-top:14px; align-items:stretch;}
+.fwb-app .sec-rows{display:flex; flex-direction:column; gap:12px; min-width:0;}
+.fwb-app .sec-preview{display:flex; flex-direction:column; gap:2px; min-height:120px; border-radius:8px; overflow:hidden;}
+.fwb-app .sec-seg{flex:1 1 0; min-height:22px; display:flex; flex-direction:column; align-items:center; justify-content:center; font:700 .64rem var(--mono); letter-spacing:.04em; border-radius:4px; color:#fff; text-align:center; line-height:1.2; padding:2px;}
+.fwb-app .sec-seg small{font-weight:500; font-size:.6rem; opacity:.85;}
+.fwb-app .sec-seg.TOP{background:rgba(27,111,176,.75);} .fwb-app .sec-seg.MIDDLE{background:rgba(181,121,10,.78);} .fwb-app .sec-seg.BOTTOM{background:rgba(110,120,128,.8);}
+.fwb-app .sec-tag{display:inline-block; font:700 .62rem var(--mono); letter-spacing:.1em; padding:2px 7px; border-radius:5px; margin-left:8px; vertical-align:1px; color:#fff;}
+.fwb-app .sec-tag.TOP{background:#1b6fb0;} .fwb-app .sec-tag.MIDDLE{background:#b5790a;} .fwb-app .sec-tag.BOTTOM{background:#6e7880;}
+.fwb-app .sectionCheck{margin-top:10px;}
+.fwb-app .panel-issues:empty, .fwb-app .heightLimitError:empty, .fwb-app .manualTotalError:empty{display:none;}
+
+/* ---------- alerts ---------- */
+.fwb-app .alert{display:flex; gap:10px; align-items:flex-start; margin:0 0 12px; padding:11px 14px; border-radius:10px; border:1px solid var(--line-strong); border-left-width:4px; background:var(--panel); font-size:.86rem; line-height:1.5; color:var(--text);}
+.fwb-app .alert::before{flex:none; font:700 .95rem/1.4 var(--mono);}
+.fwb-app .alert.err{border-color:var(--danger); background:var(--danger-soft);}
+.fwb-app .alert.err::before{content:'!'; color:var(--danger);}
+.fwb-app .alert.ok{border-color:rgba(95,209,146,.55); background:var(--good-soft); color:#cdeedd;}
+.fwb-app .alert.ok::before{content:'\2713'; color:var(--good);}
+.fwb-app .alert.info{border-color:var(--amber-dim); background:var(--amber-soft);}
+.fwb-app .alert.info::before{content:'i'; color:var(--amber);}
+.fwb-app .alert[hidden]{display:none;}
+.fwb-app .warn-box{margin:12px 0 0; border-radius:10px; padding:11px 14px; line-height:1.5; border-left:4px solid var(--warn);}
+
+/* ---------- results ---------- */
+.fwb-app .results.stale .summary-strip, .fwb-app .results.stale #stpPasteCard, .fwb-app .results.stale .diagram-card,
+.fwb-app .results.stale .schedule-card{opacity:.4; filter:grayscale(.5); transition:opacity .2s;}
+.fwb-app .summary-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; margin-bottom:18px;}
+.fwb-app .summary-chip{padding:14px 16px; border-radius:12px; min-width:0;}
+.fwb-app .summary-chip .num{font-family:var(--mono); font-size:1.75rem; line-height:1.1;}
+.fwb-app .summary-chip .lbl{font-size:.68rem; line-height:1.3; margin-top:5px; letter-spacing:.08em;}
+.fwb-app .summary-chip:first-child{background:var(--amber-soft); border-color:var(--amber-dim);}
+.fwb-app #cutSummaryList{list-style:none; margin:0; padding:0; font-family:var(--mono); font-size:.9rem;}
+.fwb-app #cutSummaryList li{padding:9px 2px; border-bottom:1px dashed var(--line); display:flex; gap:14px; align-items:baseline;}
+.fwb-app #cutSummaryList li:last-child{border-bottom:0;}
+.fwb-app #cutSummaryList li b{flex:none; min-width:3em; color:var(--amber);}
+.fwb-app #stpPasteText{width:100%; margin-top:10px; background:var(--panel-2); border:1px solid var(--line-strong); border-radius:9px; color:var(--text); font:500 .82rem var(--mono); padding:10px 12px; resize:vertical;}
+.fwb-app .diag-meta{margin:-6px 0 12px; color:var(--text-dim); font:500 .8rem var(--mono);}
+.fwb-app .offset-row{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:0 0 12px; font-size:.85rem; color:var(--text-dim);}
+.fwb-app .offset-row .pill{font:600 .78rem var(--mono); color:var(--joiner-color); background:rgba(46,168,224,.1); border:1px solid rgba(46,168,224,.4); padding:5px 10px; border-radius:999px;}
+.fwb-app .diagram-scroll{padding:14px; border-radius:12px; background:var(--panel-2);}
+.fwb-app .diagram-scroll svg{width:100%; min-width:780px; max-width:1280px; height:auto; margin:0 auto;}
+.fwb-app .table-wrap{overflow-x:auto; margin:0 -4px; padding:0 4px;}
+.fwb-app .table-wrap table{margin-top:0; min-width:720px;}
+.fwb-app th{white-space:nowrap; padding:10px 12px;}
+.fwb-app td{padding:10px 12px;}
+.fwb-app tbody tr:nth-child(even){background:rgba(255,255,255,.025);}
+.fwb-app tbody tr:hover{background:rgba(255,194,60,.06);}
+.fwb-app .finish-card{border-color:var(--amber-dim); background:linear-gradient(180deg,#242b31,#20262b);}
+.fwb-app .finish-actions{display:flex; gap:12px; flex-wrap:wrap; align-items:center;}
+.fwb-app .finish-actions .btn-lg{flex:1 1 280px;}
+.fwb-app .finish-actions .btn:not(.btn-lg){flex:1 1 240px; min-height:50px;}
+.fwb-app .finish-note{margin:14px 0 0; font-size:.82rem; color:var(--text-dim); line-height:1.55;}
+
+/* ---------- calculate row + sticky status bar ---------- */
+.fwb-app .calc-row{display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin:6px 0 26px;}
+.fwb-app .calc-row .btn-lg{flex:0 1 320px; min-width:220px;}
+.fwb-app .calc-row .live-note{font-size:.84rem; color:var(--text-dim); flex:1; min-width:200px;}
+.fwb-app .calc-row .live-note.on{color:var(--good);}
+.fwb-app .fwb-bar{position:sticky; bottom:0; z-index:40; background:rgba(20,24,27,.95); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); border-top:1px solid var(--line-strong); box-shadow:0 -8px 24px rgba(0,0,0,.35);}
+.fwb-app .fwb-bar-inner{max-width:1120px; margin:0 auto; padding:11px 24px; display:flex; align-items:center; justify-content:space-between; gap:16px;}
+.fwb-app .bar-msg{min-width:0; font-size:.88rem; color:var(--text); display:flex; align-items:center; gap:10px;}
+.fwb-app .bar-msg .dot{flex:none; width:10px; height:10px; border-radius:50%; background:var(--text-dim);}
+.fwb-app .bar-msg.ok .dot{background:var(--good); box-shadow:0 0 0 4px rgba(95,209,146,.2);}
+.fwb-app .bar-msg.bad .dot{background:var(--danger); box-shadow:0 0 0 4px rgba(255,122,99,.2);}
+.fwb-app .bar-msg.todo .dot{background:var(--amber); box-shadow:0 0 0 4px rgba(255,194,60,.2);}
+.fwb-app .bar-msg .txt{min-width:0;}
+.fwb-app .bar-msg .txt b{font-family:var(--mono); font-weight:700;}
+.fwb-app .bar-msg .sub{display:block; font-size:.76rem; color:var(--text-dim);}
+/* Drawing side-by-side: the drawing keeps up to 75% of the screen, but the form column never gets narrower than 420px */
+#drawingViewerPanel{width:min(75%, calc(100% - 420px));}
+body.viewerOpen .wrap{padding-right:calc(min(75%, calc(100% - 420px)) + 20px);}
+body.viewerOpen .fwb-app .fwb-bar-inner{max-width:none; margin:0; padding-right:calc(min(75%, calc(100% - 420px)) + 20px);}
+body.viewerOpen .fwb-app .wrap{max-width:none;}
+
+/* flash when the numbers refresh themselves */
+@keyframes fwbFlash{0%{box-shadow:0 0 0 0 rgba(255,194,60,.55);}100%{box-shadow:0 0 0 14px rgba(255,194,60,0);}}
+.fwb-app .summary-strip.flash .summary-chip:first-child{animation:fwbFlash .7s ease-out;}
+
+/* ---------- smaller screens ---------- */
+@media (max-width:1100px){
+  #drawingViewerPanel{width:100%;}
+  body.viewerOpen .wrap{padding-right:28px;}
+  body.viewerOpen .fwb-app .fwb-bar-inner{padding-right:24px;}
+}
+@media (max-width:900px){
+  .fwb-app .panel-grid{grid-template-columns:1fr;}
+  .fwb-app .panel-grid > .pcol + .pcol{margin-top:18px;}
+  .fwb-app .panel-grid > .pcol + .pcol > .group:first-child{margin-top:0;}
+}
+@media (max-width:720px){
+  .fwb-app header.plate{padding:14px 16px 12px;}
+  .fwb-app header.plate h1{font-size:1.1rem;}
+  .fwb-app .wrap{padding:16px 14px 30px;}
+  .fwb-app .card, .fwb-app .panel-instance{padding:16px 15px 18px;}
+  .fwb-app .fwb-stepper{grid-template-columns:repeat(2,1fr);}
+  .fwb-app .fstep small{display:none;}
+  .fwb-app .scan-preview{flex-direction:column;}
+  .fwb-app .fwb-bar-inner{padding:10px 14px; gap:10px;}
+  .fwb-app .bar-msg{font-size:.8rem;}
+  .fwb-app .sec-wrap{grid-template-columns:1fr 64px;}
+  .fwb-app .calc-row .btn-lg{flex:1 1 100%;}
+}
+@media (max-width:420px){
+  .fwb-app .field-row{gap:10px;}
+  .fwb-app .btn{padding:0 12px;}
+}
+</style>
 <style>
 /* ===== STRUT CALCULATOR (Tab 2) — scoped to .stp-app ===== */
   .stp-app{
@@ -829,6 +1104,482 @@ html,body{margin:0;padding:0;background:var(--charcoal);font-family:'Inter',sans
 }
 
 </style>
+<style id="themeUnifyCss">
+/* ===== STRUT + ALUMINIUM TABS — SAME DARK/AMBER THEME AS THE FREEWAY BOARD TAB =====
+   Screen only: everything is inside @media screen, so the printed workshop sheets (which use the
+   @media print rules above) look exactly as they did before. Scoped to .stp-app / .al-app, so
+   tab 1 is untouched. Calculations are not touched at all — this is paint only. */
+@media screen{
+/* ---------- shared palette: the same colours the Freeway Board tab uses ---------- */
+.stp-app, .al-app{--bg:#181c1f; --panel:#20262b; --panel-2:#262d33; --panel-svg:#2a3138;
+  --line:#343c42; --line-strong:#46515a;
+  --amber:#ffc23c; --amber-dim:#8a6a1f; --amber-soft:rgba(255,194,60,.12);
+  --text:#e9edf0; --text-dim:#9aa5ab; --text-mute:#9aa5ab;
+  --good:#5fd192; --good-soft:rgba(95,209,146,.11);
+  --warn:#ff8a5c; --danger:#ff7a63; --danger-soft:rgba(255,122,99,.12);
+  --steel-light:#262d33;
+  --red:#ff7a63; --green:#5fd192; --blue:#2ea8e0; --purple:#a78bdb;
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,'Liberation Mono',monospace;
+  --ring:0 0 0 3px rgba(255,194,60,.32);
+  --radius:14px;
+  color-scheme:dark;
+  background:var(--bg); color:var(--text);
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  line-height:1.45; -webkit-font-smoothing:antialiased;}
+
+.stp-app button, .al-app button{font-family:inherit;}
+
+.stp-app :focus-visible, .al-app :focus-visible{outline:2px solid var(--amber); outline-offset:2px;}
+
+.stp-app input:focus-visible, .al-app input:focus-visible, .stp-app select:focus-visible, .al-app select:focus-visible, .stp-app textarea:focus-visible, .al-app textarea:focus-visible{outline:none; border-color:var(--amber); box-shadow:var(--ring);}
+
+
+/* ---------- header plate (same as tab 1) ---------- */
+.stp-app > header.plate, .al-app > header.plate{background:linear-gradient(180deg,#23292e,#1c2124); border-bottom:3px solid var(--amber);
+  padding:16px 28px 14px; align-items:center; gap:20px; color:var(--text);}
+
+.stp-app > header.plate h1, .al-app > header.plate h1{font-family:'Inter',sans-serif; font-weight:700; font-size:1.35rem; letter-spacing:.03em; text-transform:none; color:var(--text); margin:0;}
+
+.stp-app > header.plate h1 span, .al-app > header.plate h1 span{color:var(--amber);}
+
+.stp-app > header.plate .tag, .al-app > header.plate .tag{font-family:'Inter',sans-serif; font-size:.84rem; color:var(--text-dim); margin-top:6px;}
+
+.stp-app .settings-bar, .al-app .settings-bar{background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:12px; padding:9px 12px; gap:12px;}
+
+.stp-app .settings-bar label, .al-app .settings-bar label{font-size:.66rem; font-weight:700; letter-spacing:.08em; color:var(--text-dim); margin:0 0 4px; text-transform:uppercase;}
+
+.stp-app .settings-bar input[type=number], .al-app .settings-bar input[type=number]{width:86px; height:34px; padding:0 9px; font-size:.88rem;}
+
+.stp-app .seam-toggle, .al-app .seam-toggle{background:var(--panel-2); border:1px solid var(--line-strong); border-radius:9px; padding:0 12px; min-height:34px;}
+
+.stp-app .seam-toggle label, .al-app .seam-toggle label{font-size:.82rem; font-weight:600; color:var(--text); text-transform:none; letter-spacing:0; margin:0;}
+
+.stp-app .seam-toggle input, .al-app .seam-toggle input{accent-color:var(--amber); cursor:pointer;}
+
+.stp-app main, .al-app main{max-width:1120px; padding:22px 24px 60px; counter-reset:stepn;}
+
+
+/* ---------- inputs ---------- */
+.stp-app input[type=number], .al-app input[type=number], .stp-app input[type=text], .al-app input[type=text], .stp-app select, .al-app select{height:42px; padding:0 12px; background:var(--panel-2); border:1px solid var(--line-strong); border-radius:9px;
+  color:var(--text); font:500 .95rem var(--mono); transition:border-color .15s, box-shadow .15s, background .15s;}
+
+.stp-app select, .al-app select{font-family:'Inter',sans-serif; font-size:.9rem; appearance:none; -webkit-appearance:none; padding-right:34px; cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%239aa5ab' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 12px center;}
+
+.stp-app input[type=number]:hover, .al-app input[type=number]:hover, .stp-app input[type=text]:hover, .al-app input[type=text]:hover, .stp-app select:hover, .al-app select:hover{border-color:#5d6a74;}
+
+.stp-app input[type=number]::-webkit-outer-spin-button, .al-app input[type=number]::-webkit-outer-spin-button, .stp-app input[type=number]::-webkit-inner-spin-button, .al-app input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
+
+.stp-app input[type=number], .al-app input[type=number]{-moz-appearance:textfield; appearance:textfield;}
+
+.stp-app input[type=checkbox], .al-app input[type=checkbox]{accent-color:var(--amber);}
+
+.stp-app input::placeholder, .al-app input::placeholder, .stp-app textarea::placeholder, .al-app textarea::placeholder{color:#6f7b82;}
+
+.stp-app option, .al-app option{background:#20262b; color:var(--text);}
+
+
+/* ---------- cards / panels ---------- */
+.stp-app .panel, .al-app .panel{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:18px; overflow:hidden;}
+
+.stp-app .panel-head, .al-app .panel-head{background:rgba(255,255,255,.025); padding:14px 22px; border-bottom:1px solid var(--line); gap:12px;}
+
+.stp-app .panel-head h2, .al-app .panel-head h2{display:flex; align-items:center; font-family:'Inter',sans-serif; font-size:1.1rem; font-weight:700; text-transform:none; letter-spacing:0; color:var(--text); margin:0; line-height:1.3;}
+
+.stp-app main > .panel > .panel-head h2::before, .al-app main > .panel > .panel-head h2::before{counter-increment:stepn; content:counter(stepn); flex:none; display:grid; place-items:center; width:30px; height:30px; margin-right:14px;
+  border-radius:50%; background:var(--amber); color:#1c1a12; font:700 .9rem var(--mono);}
+
+.stp-app .panel-head .count, .al-app .panel-head .count{font:500 .78rem var(--mono); color:var(--text-dim);}
+
+.stp-app .panel-body, .al-app .panel-body{padding:16px 22px 18px;}
+
+
+/* ---------- buttons ---------- */
+.stp-app .reset-btn, .al-app .reset-btn, .stp-app .reset-btn-outline, .al-app .reset-btn-outline{display:inline-flex; align-items:center; gap:7px; min-height:32px; padding:0 12px; border-radius:8px;
+  background:transparent; color:var(--text); border:1px solid var(--line-strong);
+  font:600 .8rem 'Inter',sans-serif; white-space:nowrap; cursor:pointer; transition:border-color .15s, color .15s, background .15s;}
+
+.stp-app .reset-btn:hover, .al-app .reset-btn:hover, .stp-app .reset-btn-outline:hover, .al-app .reset-btn-outline:hover{background:transparent; border-color:var(--amber); color:#fff;}
+
+.stp-app .add-row, .al-app .add-row{display:flex; align-items:center; justify-content:center; width:100%; min-height:44px; padding:0 14px; margin-top:12px;
+  background:transparent; border:1px dashed var(--line-strong); border-radius:9px; color:var(--amber);
+  font:600 .88rem 'Inter',sans-serif; cursor:pointer; transition:background .15s, border-color .15s;}
+
+.stp-app .add-row:hover, .al-app .add-row:hover{background:var(--amber-soft); border-color:var(--amber);}
+
+.stp-app .add-row[disabled], .al-app .add-row[disabled]{opacity:.5; cursor:not-allowed;}
+
+.stp-app .rm-btn, .al-app .rm-btn, .stp-app .piece-remove button, .al-app .piece-remove button{width:32px; height:32px; padding:0; display:inline-grid; place-items:center; flex:none;
+  background:transparent; border:1px solid var(--line-strong); border-radius:8px; color:var(--text-dim);
+  font-size:1.2rem; line-height:1; cursor:pointer; transition:border-color .15s, color .15s;}
+
+.stp-app .rm-btn:hover, .al-app .rm-btn:hover, .stp-app .piece-remove button:hover, .al-app .piece-remove button:hover{opacity:1; border-color:var(--danger); color:var(--danger);}
+
+.stp-app .calc-bar, .al-app .calc-bar{margin:6px 0 24px; justify-content:flex-start;}
+
+.stp-app .calc-btn, .al-app .calc-btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:50px; min-width:300px; padding:0 34px;
+  background:var(--amber); color:#1c1a12; border:1px solid var(--amber); border-radius:9px; box-shadow:none;
+  font:700 1rem 'Inter',sans-serif; letter-spacing:.01em; text-transform:none; cursor:pointer; transition:background .15s, border-color .15s, transform .05s;}
+
+.stp-app .calc-btn:hover, .al-app .calc-btn:hover{background:#ffd166; border-color:#ffd166;}
+
+.stp-app .calc-btn:active, .al-app .calc-btn:active{transform:translateY(1px); box-shadow:none;}
+
+.stp-app .calc-btn.secondary, .al-app .calc-btn.secondary{background:var(--panel-2); color:var(--text); border-color:var(--line-strong);}
+
+.stp-app .calc-btn.secondary:hover, .al-app .calc-btn.secondary:hover{background:var(--panel-2); border-color:var(--amber); color:#fff;}
+
+
+/* ---------- stock tables ---------- */
+.stp-app table.stock, .al-app table.stock{font-size:.9rem;}
+
+.stp-app table.stock th, .al-app table.stock th{white-space:nowrap; text-align:left; font-size:.7rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text-dim); padding:8px 10px; border-bottom:1px solid var(--line-strong);}
+
+.stp-app table.stock td, .al-app table.stock td{padding:8px 10px; border-bottom:1px solid var(--line);}
+
+.stp-app table.stock tbody tr:last-child td, .al-app table.stock tbody tr:last-child td{border-bottom:0;}
+
+.stp-app table.stock input[type=number], .al-app table.stock input[type=number], .stp-app table.stock input[type=text], .al-app table.stock input[type=text], .stp-app table.stock select, .al-app table.stock select{height:38px; padding:0 10px; font-size:.9rem; background-color:var(--panel-2); border:1px solid var(--line-strong); border-radius:9px; width:100%;}
+
+.stp-app table.stock select, .al-app table.stock select{padding-right:30px; min-width:116px;}
+
+.stp-app .type-chip, .al-app .type-chip{white-space:nowrap; font-family:'Inter',sans-serif; font-weight:700; letter-spacing:0; color:var(--text);}
+
+.stp-app .empty-hint, .al-app .empty-hint{color:var(--text-dim); font-size:.85rem;}
+
+
+/* ---------- piece cards (the "what do you need to cut" rows) ---------- */
+.stp-app .piece-card, .al-app .piece-card{background:rgba(255,255,255,.02); border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:14px;}
+
+.stp-app .piece-top, .al-app .piece-top{gap:14px; align-items:flex-end;}
+
+.stp-app .piece-field label, .al-app .piece-field label{display:block; font-size:.78rem; font-weight:600; letter-spacing:.01em; text-transform:none; color:var(--text-dim); margin:0 0 6px;}
+
+.stp-app .piece-field input[type=text], .al-app .piece-field input[type=text]{width:210px; height:44px; padding:0 12px; font:600 1rem 'Inter',sans-serif; border:1px solid var(--line-strong); border-radius:9px;}
+
+.stp-app .piece-field select, .stp-app .piece-field select{width:230px;}
+
+.al-app .piece-field select, .al-app .piece-field select{width:130px;}
+
+.stp-app .piece-field select, .al-app .piece-field select{height:44px; font:600 .92rem 'Inter',sans-serif; border:1px solid var(--line-strong); border-radius:9px; padding:0 34px 0 12px;}
+
+.stp-app .piece-field input[type=number], .al-app .piece-field input[type=number]{width:120px; height:44px; padding:0 12px; font:700 1.05rem var(--mono); text-align:left; border:1px solid var(--line-strong); border-radius:9px;}
+
+.stp-app .piece-field.qty input, .al-app .piece-field.qty input{width:90px;}
+
+.al-app .piece-field:first-child, .al-app .piece-field:first-child{flex:1 1 220px; min-width:190px;}
+
+.al-app .piece-field:first-child input[type=text], .al-app .piece-field:first-child input[type=text]{width:100%;}
+
+.stp-app .piece-field.rotate, .al-app .piece-field.rotate{flex-direction:row; align-items:center; gap:10px; padding-bottom:11px;}
+
+.stp-app .piece-field.rotate input, .al-app .piece-field.rotate input{width:20px; height:20px; padding:0; cursor:pointer;}
+
+.stp-app .piece-field.rotate label, .al-app .piece-field.rotate label{margin:0; font-size:.9rem; font-weight:500; color:var(--text); cursor:pointer;}
+
+.stp-app .piece-remove, .al-app .piece-remove{margin-left:auto; padding-bottom:6px;}
+
+.stp-app .piece-hint, .al-app .piece-hint{background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:9px; color:var(--text-dim);}
+
+.stp-app .piece-hint b, .al-app .piece-hint b{color:var(--text);}
+
+
+/* ---------- Aluminium plan boxes ---------- */
+.stp-app .plan-box, .al-app .plan-box{border-radius:10px; padding:14px 16px; font-size:.92rem; margin-top:14px; line-height:1.5; border:1px solid var(--line-strong); border-left-width:4px;}
+
+.stp-app .plan-box.none, .al-app .plan-box.none{background:var(--good-soft); border-color:rgba(95,209,146,.5); color:#cdeedd; font-weight:600; font-size:.92rem;}
+
+.stp-app .plan-box.joiner, .al-app .plan-box.joiner{background:rgba(46,168,224,.09); border-color:rgba(46,168,224,.5);}
+
+.stp-app .plan-box.connecting, .al-app .plan-box.connecting{background:var(--amber-soft); border-color:var(--amber-dim);}
+
+.stp-app .plan-box.blocked, .al-app .plan-box.blocked{background:var(--danger-soft); border-color:var(--danger); color:var(--danger); font-weight:600; font-size:.92rem;}
+
+.stp-app .plan-title, .al-app .plan-title{font:700 .72rem 'Inter',sans-serif; letter-spacing:.12em; text-transform:uppercase; margin-bottom:12px;}
+
+.stp-app .plan-title.joiner, .al-app .plan-title.joiner{color:#7fcdf0;}
+
+.stp-app .plan-title.connecting, .al-app .plan-title.connecting{color:var(--amber);}
+
+.stp-app .seg-item, .al-app .seg-item{background:var(--panel-2); border:1px solid var(--line-strong); border-radius:9px; padding:8px 10px;}
+
+.stp-app .seg-item .seg-lbl, .al-app .seg-item .seg-lbl{font-size:.64rem; font-weight:600; letter-spacing:.08em; color:var(--text-dim); text-transform:uppercase; margin-bottom:5px;}
+
+.stp-app .seg-item input[type=number], .al-app .seg-item input[type=number]{width:100px; height:36px; padding:0 8px; font:700 1rem var(--mono); text-align:center; background:var(--bg); border:1px solid var(--line-strong); border-radius:8px;}
+
+.stp-app .seg-item.auto input, .al-app .seg-item.auto input{background:transparent; border-style:dashed; color:var(--text-dim);}
+
+.stp-app .seg-plus, .al-app .seg-plus{color:var(--text-dim); font-weight:700;}
+
+.stp-app .invalid-note, .al-app .invalid-note{color:var(--danger); font-weight:600; font-size:.86rem;}
+
+.stp-app .offcut-preview, .al-app .offcut-preview{background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:9px; color:var(--text); font-size:.86rem; line-height:1.7;}
+
+.stp-app .offcut-preview b, .al-app .offcut-preview b{color:var(--amber);}
+
+
+/* ---------- results: summary tiles ---------- */
+.stp-app .summary, .al-app .summary{gap:12px;}
+
+.stp-app .stat, .al-app .stat{background:var(--panel); border:1px solid var(--line); border-top:3px solid var(--amber); border-radius:12px; padding:14px 16px;}
+
+.stp-app .stat.good, .al-app .stat.good{border-top-color:var(--good);}
+
+.stp-app .stat.warn, .al-app .stat.warn{border-top-color:var(--danger);}
+
+.stp-app .stat .num-big, .al-app .stat .num-big{font:700 1.75rem/1.1 var(--mono); color:var(--text);}
+
+.stp-app .stat .lbl, .al-app .stat .lbl{font-size:.68rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--text-dim); margin-top:5px; line-height:1.3;}
+
+
+/* ---------- results: headings ---------- */
+.stp-app .section-title, .al-app .section-title{font:700 1.05rem/1.3 'Inter',sans-serif; text-transform:none; letter-spacing:0; color:var(--text); margin:30px 0 14px; padding-left:12px; border-left:4px solid var(--amber);}
+
+.stp-app .section-title.err, .al-app .section-title.err{border-left-color:var(--danger);}
+
+.stp-app .section-title.info, .al-app .section-title.info{border-left-color:#7fb8c9;}
+
+.stp-app details.job-breakdown summary.section-title::marker, .al-app details.job-breakdown summary.section-title::marker{color:var(--amber);}
+
+.stp-app details.job-breakdown summary.section-title:hover, .al-app details.job-breakdown summary.section-title:hover{color:var(--amber);}
+
+
+/* ---------- results: tables ---------- */
+.stp-app .order-table, .al-app .order-table, .stp-app .bundle-table, .al-app .bundle-table, .stp-app .offcut-summary, .al-app .offcut-summary{background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden; margin-bottom:10px;}
+
+.stp-app .order-table table, .al-app .order-table table, .stp-app .bundle-table table, .al-app .bundle-table table, .stp-app .offcut-summary table, .al-app .offcut-summary table, .stp-app .blocked-table table, .al-app .blocked-table table, .stp-app .sheets-needed table, .al-app .sheets-needed table{font-size:.9rem;}
+
+.stp-app .order-table th, .al-app .order-table th, .stp-app .order-table td, .al-app .order-table td, .stp-app .bundle-table th, .al-app .bundle-table th, .stp-app .bundle-table td, .al-app .bundle-table td, .stp-app .offcut-summary th, .al-app .offcut-summary th, .stp-app .offcut-summary td, .al-app .offcut-summary td, .stp-app .blocked-table th, .al-app .blocked-table th, .stp-app .blocked-table td, .al-app .blocked-table td, .stp-app .sheets-needed th, .al-app .sheets-needed th, .stp-app .sheets-needed td, .al-app .sheets-needed td{padding:11px 14px; text-align:left; border-bottom:1px solid var(--line);}
+
+.stp-app .order-table thead th, .al-app .order-table thead th, .stp-app .bundle-table thead th, .al-app .bundle-table thead th, .stp-app .offcut-summary thead th, .al-app .offcut-summary thead th, .stp-app .sheets-needed thead th, .al-app .sheets-needed thead th{font-size:.7rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text-dim); background:rgba(255,255,255,.03); border-bottom:1px solid var(--line-strong);}
+
+.stp-app .order-table tbody tr:last-child td, .al-app .order-table tbody tr:last-child td, .stp-app .bundle-table tbody tr:last-child td, .al-app .bundle-table tbody tr:last-child td, .stp-app .offcut-summary tbody tr:last-child td, .al-app .offcut-summary tbody tr:last-child td, .stp-app .sheets-needed tbody tr:last-child td, .al-app .sheets-needed tbody tr:last-child td{border-bottom:0;}
+
+.stp-app .order-table tbody tr:hover, .al-app .order-table tbody tr:hover, .stp-app .offcut-summary tbody tr:hover, .al-app .offcut-summary tbody tr:hover{background:rgba(255,194,60,.06);}
+
+.stp-app .sizecell, .al-app .sizecell{font-family:var(--mono); font-weight:700; font-size:.95rem; color:var(--text);}
+
+.stp-app .status-keep, .al-app .status-keep{color:var(--good); font-weight:700;}
+
+.stp-app .status-scrap, .al-app .status-scrap{color:var(--danger); font-weight:700;}
+
+.stp-app .status-used, .al-app .status-used{color:var(--text-dim);}
+
+.stp-app .bundle-table td.num, .al-app .bundle-table td.num, .stp-app .bundle-table th.num, .al-app .bundle-table th.num{text-align:right; font-family:var(--mono); width:auto;}
+
+.stp-app .bundle-table th.num, .al-app .bundle-table th.num{white-space:nowrap;}
+
+.stp-app .bundle-table thead th.num, .al-app .bundle-table thead th.num{font-family:'Inter',sans-serif;}
+
+.stp-app .bundle-table .spare, .al-app .bundle-table .spare{color:var(--good); font-weight:700;}
+
+.stp-app .bundle-table .big-num, .al-app .bundle-table .big-num{font:700 1.5rem var(--mono); color:var(--text);}
+
+.stp-app .bundle-table .big-num-secondary, .al-app .bundle-table .big-num-secondary{font:700 1.1rem var(--mono); color:var(--text-dim);}
+
+.stp-app .bundle-table tr.row-needs-buy, .al-app .bundle-table tr.row-needs-buy{background:rgba(255,194,60,.06);}
+
+.stp-app .bundle-table tr.row-needs-buy .flag-buy, .al-app .bundle-table tr.row-needs-buy .flag-buy{color:var(--amber);}
+
+.stp-app .bundle-table tr.row-covered, .al-app .bundle-table tr.row-covered{background:rgba(95,209,146,.07);}
+
+.stp-app .bundle-table tr.row-covered .flag-ok, .al-app .bundle-table tr.row-covered .flag-ok, .stp-app .bundle-table .ok-tag, .al-app .bundle-table .ok-tag{color:var(--good);}
+
+.stp-app .bundle-table tr.row-total, .al-app .bundle-table tr.row-total{background:var(--panel-svg); color:var(--text); font-weight:800; box-shadow:inset 0 2px 0 var(--amber);}
+
+.stp-app .bundle-table tr.row-total td, .al-app .bundle-table tr.row-total td{border-bottom:0; padding-top:14px; padding-bottom:14px;}
+
+.stp-app .bundle-table tr.row-total .big-num, .al-app .bundle-table tr.row-total .big-num, .stp-app .bundle-table tr.row-total .big-num-secondary, .al-app .bundle-table tr.row-total .big-num-secondary{color:var(--text);}
+
+.stp-app .blocked-table, .al-app .blocked-table{background:var(--panel); border:1px solid var(--danger); border-radius:12px; overflow:hidden; margin-bottom:10px;}
+
+.stp-app .blocked-table thead, .al-app .blocked-table thead{background:var(--danger-soft);}
+
+.stp-app .blocked-table thead th, .al-app .blocked-table thead th{font-size:.7rem; letter-spacing:.08em; text-transform:uppercase; color:var(--danger);}
+
+.stp-app .sheets-needed, .al-app .sheets-needed{background:var(--panel); border:1px solid var(--amber-dim); border-radius:12px; overflow:hidden; margin-bottom:24px; box-shadow:0 0 0 3px rgba(255,194,60,.07);}
+
+.stp-app .sheets-needed td, .al-app .sheets-needed td{font:700 1rem var(--mono); color:var(--text);}
+
+.stp-app .sheets-needed td:first-child, .al-app .sheets-needed td:first-child{font-family:'Inter',sans-serif; font-weight:600; font-size:.92rem;}
+
+.stp-app .sheets-needed .total-cell, .al-app .sheets-needed .total-cell{color:var(--amber); font-size:1.1rem;}
+
+.stp-app .order-note, .al-app .order-note{background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--amber); border-radius:10px; padding:16px 20px; font-size:.95rem; line-height:1.7; color:var(--text);}
+
+.stp-app .order-note b, .al-app .order-note b{color:var(--amber);}
+
+.stp-app .collapsible, .al-app .collapsible{background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden; margin-bottom:10px;}
+
+.stp-app .collapsible-head, .al-app .collapsible-head{background:rgba(255,255,255,.03); color:var(--text); padding:12px 20px;}
+
+.stp-app .collapsible-head:hover, .al-app .collapsible-head:hover{background:rgba(255,194,60,.07);}
+
+.stp-app .collapsible-head .section-title, .al-app .collapsible-head .section-title{margin:0;}
+
+.stp-app .collapsible-head .chevron, .al-app .collapsible-head .chevron{color:var(--amber);}
+
+.stp-app .collapsible-body, .al-app .collapsible-body{border-top:1px solid var(--line);}
+
+
+/* ---------- pills ---------- */
+.stp-app .pill, .al-app .pill{display:inline-block; padding:3px 11px; border-radius:999px; font-size:.72rem; font-weight:700; border:1px solid transparent;}
+
+.stp-app .pill.a, .al-app .pill.a{background:rgba(46,168,224,.15); color:#7fcdf0; border-color:rgba(46,168,224,.4);}
+
+.stp-app .pill.b, .al-app .pill.b{background:rgba(95,209,146,.14); color:#7fe0ad; border-color:rgba(95,209,146,.4);}
+
+.stp-app .pill.ja, .al-app .pill.ja{background:rgba(255,107,26,.16); color:#ff9a5c; border-color:rgba(255,107,26,.42);}
+
+.stp-app .pill.jb, .al-app .pill.jb{background:rgba(255,200,69,.14); color:#ffd470; border-color:rgba(255,200,69,.4);}
+
+.stp-app .pill.z, .al-app .pill.z{background:rgba(167,139,219,.18); color:#c3a9f0; border-color:rgba(167,139,219,.42);}
+
+.stp-app .pill.sp150, .al-app .pill.sp150{background:rgba(136,153,166,.18); color:#b6c3cc; border-color:rgba(136,153,166,.4);}
+
+.stp-app .pill.sp200, .al-app .pill.sp200{background:rgba(106,127,138,.2); color:#a9b9c2; border-color:rgba(106,127,138,.45);}
+
+.stp-app .pill.offcut, .al-app .pill.offcut{background:rgba(255,138,92,.14); color:#ffa27d; border-color:rgba(255,138,92,.4);}
+
+.stp-app .pill.join, .al-app .pill.join{background:rgba(255,200,69,.14); color:#ffd470; border-color:rgba(255,200,69,.4);}
+
+.stp-app .pill.connecting, .al-app .pill.connecting{background:var(--amber-soft); color:var(--amber); border-color:var(--amber-dim);}
+
+.stp-app .pill.sheet, .al-app .pill.sheet{background:rgba(95,209,146,.14); color:#7fe0ad; border-color:rgba(95,209,146,.4);}
+
+.stp-app .pill.seam, .al-app .pill.seam{background:rgba(46,168,224,.15); color:#7fcdf0; border-color:rgba(46,168,224,.4);}
+
+.stp-app .pill.blocked, .al-app .pill.blocked{background:var(--danger-soft); color:var(--danger); border-color:rgba(255,122,99,.45);}
+
+
+/* ---------- strut type panels & cut diagrams ---------- */
+.stp-app .type-panel .panel-head, .al-app .type-panel .panel-head{border-left:6px solid var(--amber);}
+
+.stp-app .type-panel.a .panel-head, .al-app .type-panel.a .panel-head{border-left-color:#2ea8e0;}
+
+.stp-app .type-panel.b .panel-head, .al-app .type-panel.b .panel-head{border-left-color:#5fd192;}
+
+.stp-app .type-panel.ja .panel-head, .al-app .type-panel.ja .panel-head{border-left-color:#ff7a33;}
+
+.stp-app .type-panel.jb .panel-head, .al-app .type-panel.jb .panel-head{border-left-color:#ffc845;}
+
+.stp-app .type-panel.z .panel-head, .al-app .type-panel.z .panel-head{border-left-color:#a78bdb;}
+
+.stp-app .type-panel.sp150 .panel-head, .al-app .type-panel.sp150 .panel-head{border-left-color:#8899a6;}
+
+.stp-app .type-panel.sp200 .panel-head, .al-app .type-panel.sp200 .panel-head{border-left-color:#6a7f8a;}
+
+.stp-app .steps-list, .al-app .steps-list{color:var(--text); font-size:.92rem;}
+
+.stp-app .steps-list b, .al-app .steps-list b{color:var(--amber);}
+
+.stp-app .cut-summary, .al-app .cut-summary{background:var(--panel-2); border:1px solid var(--line); border-radius:10px; color:var(--text); font-size:.95rem; font-weight:600;}
+
+.stp-app .bar-card, .al-app .bar-card, .stp-app .cut-card, .al-app .cut-card{background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden;}
+
+.stp-app .bar-card .cc-head, .al-app .bar-card .cc-head, .stp-app .cut-card .cc-head, .al-app .cut-card .cc-head{background:var(--panel-svg); color:var(--text); border-bottom:1px solid var(--line); font:500 .8rem var(--mono);}
+
+.stp-app .cc-body, .al-app .cc-body{background:var(--panel-2);}
+
+.stp-app .legend-note, .al-app .legend-note{background:var(--panel-2); border-top:1px solid var(--line); color:var(--text-dim);}
+
+.stp-app .multiplier-badge, .al-app .multiplier-badge{background:var(--amber); color:#1c1a12; font:700 .8rem var(--mono); box-shadow:0 2px 6px rgba(0,0,0,.35);}
+
+.stp-app .category-divider, .al-app .category-divider{color:var(--text-dim); font-family:'Inter',sans-serif; font-weight:700; letter-spacing:.12em;}
+
+
+/* ---------- paste-a-list box ---------- */
+.stp-app details.bulk-paste, .al-app details.bulk-paste{border-top:1px solid var(--line);}
+
+.stp-app details.bulk-paste summary, .al-app details.bulk-paste summary{color:var(--amber); font-weight:600; font-size:.9rem;}
+
+.stp-app .bulk-hint, .al-app .bulk-hint{color:var(--text-dim); font-size:.84rem;}
+
+.stp-app .bulk-hint code, .al-app .bulk-hint code{background:var(--panel-2); border:1px solid var(--line); color:var(--text); font-family:var(--mono);}
+
+.stp-app .bulk-label, .al-app .bulk-label{font-size:.7rem; letter-spacing:.08em; color:var(--text-dim);}
+
+.stp-app #bulkDefaultType, .al-app #bulkDefaultType{height:42px; width:100%; max-width:340px; background-color:var(--panel-2); color:var(--text); border:1px solid var(--line-strong); border-radius:9px; font-size:.9rem;}
+
+.stp-app #bulkText, .al-app #bulkText{height:auto; background:var(--panel-2); border:1px solid var(--line-strong); border-radius:9px; color:var(--text); font:500 .85rem/1.5 var(--mono);}
+
+.stp-app #bulkParseResult .parse-ok, .al-app #bulkParseResult .parse-ok{color:var(--good);}
+
+.stp-app #bulkParseResult .parse-warn, .al-app #bulkParseResult .parse-warn{background:var(--danger-soft); border:1px solid rgba(255,122,99,.5); color:var(--danger);}
+
+
+/* ---------- "before we print" box ---------- */
+.stp-app .modal-overlay, .al-app .modal-overlay{background:rgba(10,12,13,.72);}
+
+.stp-app .modal-box, .al-app .modal-box{background:linear-gradient(180deg,#23292e,#1c2124); border:1px solid var(--line-strong); border-top:3px solid var(--amber); border-radius:12px; color:var(--text); box-shadow:0 20px 60px rgba(0,0,0,.5);}
+
+.stp-app .modal-box h3, .al-app .modal-box h3{font:700 1.15rem 'Inter',sans-serif; text-transform:none; letter-spacing:0; color:var(--text);}
+
+.stp-app .modal-field label, .al-app .modal-field label{font-size:.8rem; font-weight:600; color:var(--text-dim);}
+
+.stp-app .modal-field .req, .al-app .modal-field .req{color:var(--danger);}
+
+.stp-app .modal-field input, .al-app .modal-field input{height:44px; padding:0 12px; background:var(--panel-2); border:1px solid var(--line-strong); border-radius:9px; color:var(--text); font:500 1rem 'Inter',sans-serif;}
+
+.stp-app .modal-field input:focus, .al-app .modal-field input:focus{border-color:var(--amber);}
+
+.stp-app .modal-error, .al-app .modal-error{color:var(--danger);}
+
+.stp-app .modal-cancel, .al-app .modal-cancel, .stp-app .modal-confirm, .al-app .modal-confirm{min-height:40px; padding:0 18px; border-radius:9px; font:600 .88rem 'Inter',sans-serif; cursor:pointer;}
+
+.stp-app .modal-cancel, .al-app .modal-cancel{background:transparent; border:1px solid var(--line-strong); color:var(--text);}
+
+.stp-app .modal-cancel:hover, .al-app .modal-cancel:hover{background:transparent; border-color:var(--amber); color:#fff;}
+
+.stp-app .modal-confirm, .al-app .modal-confirm{background:var(--amber); border:1px solid var(--amber); color:#1c1a12; font-weight:700;}
+
+.stp-app .modal-confirm:hover, .al-app .modal-confirm:hover{background:#ffd166; border-color:#ffd166;}
+
+
+/* ---------- smaller screens ---------- */
+@media (max-width:900px){
+  .stp-app .piece-field select, .stp-app .piece-field select, .al-app .piece-field select, .al-app .piece-field select{width:100%;}
+
+  .stp-app .piece-field, .al-app .piece-field{flex:1 1 150px;}
+
+  .stp-app .piece-field.rotate, .al-app .piece-field.rotate{flex:0 0 auto;}
+
+}
+
+@media (max-width:720px){
+  .stp-app > header.plate, .al-app > header.plate{padding:14px 16px 12px;}
+
+  .stp-app > header.plate h1, .al-app > header.plate h1{font-size:1.1rem;}
+
+  .stp-app .settings-bar, .al-app .settings-bar{width:100%;}
+
+  .stp-app main, .al-app main{padding:16px 14px 40px;}
+
+  .stp-app .panel-head, .al-app .panel-head{padding:12px 15px;}
+
+  .stp-app .panel-body, .al-app .panel-body{padding:14px 15px 16px; overflow-x:auto;}
+
+  .stp-app table.stock, .al-app table.stock{min-width:620px;}
+
+  .stp-app .piece-card, .al-app .piece-card{padding:14px 14px;}
+
+  .stp-app .piece-field input[type=text], .al-app .piece-field input[type=text], .stp-app .piece-field input[type=number], .al-app .piece-field input[type=number], .stp-app .piece-field.qty input, .al-app .piece-field.qty input{width:100%;}
+
+  .stp-app .calc-btn, .al-app .calc-btn{min-width:0; width:100%;}
+
+  .stp-app .bar-grid, .al-app .bar-grid{grid-template-columns:minmax(0,1fr);}
+
+  .stp-app .cut-grid, .al-app .cut-grid{grid-template-columns:minmax(0,1fr);}
+
+  .stp-app .order-table, .al-app .order-table, .stp-app .bundle-table, .al-app .bundle-table, .stp-app .offcut-summary, .al-app .offcut-summary, .stp-app .blocked-table, .al-app .blocked-table, .stp-app .sheets-needed, .al-app .sheets-needed{overflow-x:auto;}
+
+  .stp-app .section-title, .al-app .section-title{margin-top:24px;}
+
+}
+
+}
+</style>
 </head>
 
 <body>
@@ -948,136 +1699,190 @@ html,body{margin:0;padding:0;background:var(--charcoal);font-family:'Inter',sans
     <h1>YUNGATHA <span>Freeway Board</span> Strut Calculator</h1>
     <p>Works out strut count, lengths &amp; rivet spacing for Freeway Board signage &mdash; matches the Aluminium &amp; Strut calculators.</p>
   </div>
-  <button class="reset-btn" onclick="FWB.resetToDefaults()">
+  <button type="button" class="btn btn-sm btn-danger" id="fwbStartOverBtn" onclick="FWB.confirmReset()">
     <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
-    Reset to Defaults
+    Start over
   </button>
 </header>
 
 <div id="drawingViewerPanel">
   <div class="viewerHeader">
     <h3>Drawing Reference</h3>
-    <button class="viewerCloseBtn" onclick="FWB.closeDrawingViewer()" title="Close">&times;</button>
+    <button type="button" class="viewerCloseBtn" onclick="FWB.closeDrawingViewer()" title="Close" aria-label="Close drawing reference">&times;</button>
   </div>
-  <img id="drawingViewerImg" src="">
+  <img id="drawingViewerImg" src="" alt="Uploaded drawing">
 </div>
 
 <div class="wrap">
 
-  <!-- ===== DRAWING IMPORT ===== -->
-  <div class="card" id="importCard">
-    <h2>Import Drawing <span style="color:var(--text-dim); font-weight:400; text-transform:none; letter-spacing:normal; font-size:.75rem;">&mdash; auto-fill from a Main Roads PDF/drawing</span></h2>
+  <!-- Where you are in the job: scan -> check -> results -> print. Each step jumps to its section. -->
+  <nav class="fwb-stepper" id="fwbStepper" aria-label="Job steps">
+    <button type="button" class="fstep current" data-step="scan" onclick="FWB.goToStep('scan')"><span class="fnum">1</span><span>Scan<small>optional</small></span></button>
+    <button type="button" class="fstep" data-step="check" onclick="FWB.goToStep('check')"><span class="fnum">2</span><span>Check<small>sizes &amp; options</small></span></button>
+    <button type="button" class="fstep locked" data-step="results" onclick="FWB.goToStep('results')"><span class="fnum">3</span><span>Review<small>struts &amp; diagrams</small></span></button>
+    <button type="button" class="fstep locked" data-step="print" onclick="FWB.goToStep('print')"><span class="fnum">4</span><span>Print &amp; send<small>final step</small></span></button>
+  </nav>
+
+  <!-- ===== STEP 1: SCAN ===== -->
+  <section class="card" id="importCard" aria-labelledby="importTitle">
+    <div class="step-head">
+      <span class="step-num" aria-hidden="true">1</span>
+      <div class="grow">
+        <h2 id="importTitle">Scan a drawing</h2>
+        <p class="step-sub">Fills in step 2 from a Main Roads PDF or image. Rather type it in? Skip straight to step 2.</p>
+      </div>
+    </div>
 
     <div id="importMain">
       <div id="dropZone" class="drop-zone" ondragover="FWB.handleDragOver(event)" ondragleave="FWB.handleDragLeave(event)" ondrop="FWB.handleFileDrop(event)">
-        <div class="row2" style="align-items:end;">
-          <div>
-            <label>Drawing file (PDF or image)</label>
-            <input type="file" id="drawingFileInput" accept=".pdf,image/*" onchange="FWB.onDrawingFileSelected()">
-          </div>
-          <div>
-            <button class="calc" style="margin-top:0;" id="scanDrawingBtn" onclick="FWB.scanDrawing()" disabled>Scan Drawing</button>
-          </div>
+        <input type="file" id="drawingFileInput" accept=".pdf,image/*" onchange="FWB.onDrawingFileSelected()" aria-label="Choose a drawing file (PDF or image)">
+        <div class="drop-prompt">
+          <span class="dz-icon"><svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></span>
+          <span class="dz-text"><strong>Drop a drawing here, or click to choose a file</strong><span>PDF, JPG or PNG</span></span>
         </div>
-        <div class="hint" style="margin-top:6px;">Or drag and drop a file anywhere in this box.</div>
         <div id="fileLoadedBanner" class="file-loaded-banner" style="display:none;">
           <svg viewBox="0 0 24 24" width="20" height="20"><path d="M20 6L9 17l-5-5"/></svg>
           <span>File loaded: <strong id="fileLoadedName"></strong></span>
         </div>
       </div>
-      <div class="hint">Reads dimensions straight out of the PDF's own text/notes, with OCR as a fallback for scanned pages. Every drawing's laid out a little differently &mdash; always check the filled-in fields below before hitting Calculate.</div>
-      <div id="importStatus" class="hint" style="margin-top:10px;"></div>
+
+      <div class="scan-bar">
+        <button type="button" class="btn btn-primary btn-lg" id="scanDrawingBtn" onclick="FWB.scanDrawing()" disabled>Scan drawing</button>
+        <div id="importStatus" class="hint" role="status" aria-live="polite"></div>
+      </div>
+
       <div id="importChecklist" class="note" style="display:none;"></div>
-      <div id="importDebugWrap" style="display:none; margin-top:8px;">
-        <button type="button" class="reset-btn" style="background:var(--panel-2); color:var(--text-dim); border-color:var(--line); padding:5px 10px; font-size:.72rem;" onclick="FWB.toggleImportDebug()">Show what was actually extracted (debug)</button>
-        <pre id="importDebugText" style="display:none; margin-top:8px; max-height:220px; overflow:auto; background:var(--panel-2); border:1px solid var(--line); border-radius:6px; padding:10px; font-size:.72rem; color:var(--text-dim); white-space:pre-wrap; word-break:break-word;"></pre>
+
+      <div id="importDebugWrap" style="display:none; margin-top:12px;">
+        <button type="button" class="btn btn-sm btn-ghost" onclick="FWB.toggleImportDebug()">Show what was actually extracted (debug)</button>
+        <pre id="importDebugText" style="display:none; margin-top:8px; max-height:220px; overflow:auto; background:var(--panel-2); border:1px solid var(--line); border-radius:8px; padding:10px; font-size:.72rem; color:var(--text-dim); white-space:pre-wrap; word-break:break-word;"></pre>
       </div>
-      <div id="importThumbWrap" style="display:none; margin-top:12px;">
-        <img id="importThumb" onclick="FWB.openDrawingViewer()" style="cursor:zoom-in;" title="Click to view side-by-side">
-        <div class="hint" style="margin-top:6px;">Click the drawing to view it side-by-side while you check the fields below.</div>
-        <div style="display:flex; gap:8px; margin-top:8px;">
-          <button type="button" class="reset-btn" style="background:var(--panel-2); color:var(--amber); border-color:var(--amber); padding:6px 12px; font-size:.78rem;" onclick="FWB.rotateDrawing(-90)">&#8634; Rotate Left</button>
-          <button type="button" class="reset-btn" style="background:var(--panel-2); color:var(--amber); border-color:var(--amber); padding:6px 12px; font-size:.78rem;" onclick="FWB.rotateDrawing(90)">&#8635; Rotate Right</button>
+
+      <div id="importThumbWrap" style="display:none;">
+        <div class="scan-preview">
+          <img id="importThumb" onclick="FWB.openDrawingViewer()" style="cursor:zoom-in;" title="Click to view side-by-side" alt="Drawing preview">
+          <div class="side">
+            <div class="btnrow">
+              <button type="button" class="btn btn-sm" onclick="FWB.openDrawingViewer()">View side-by-side</button>
+              <button type="button" class="btn btn-sm" onclick="FWB.rotateDrawing(-90)" aria-label="Rotate drawing left">&#8634; Rotate left</button>
+              <button type="button" class="btn btn-sm" onclick="FWB.rotateDrawing(90)" aria-label="Rotate drawing right">&#8635; Rotate right</button>
+            </div>
+            <div class="hint" style="margin:0;">Sideways or upside-down? Rotate it first, then scan. You can rotate and re-scan afterwards too. Always compare the filled-in values in step 2 with the drawing.</div>
+          </div>
         </div>
-        <div class="hint" style="margin-top:4px;">Came in sideways or upside-down? Rotate it here first, then hit Scan Drawing. You can still rotate and re-scan afterwards too.</div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="grid">
-    <!-- MAIN / SUB PANELS (repeatable) -->
-    <div class="card">
-      <h2>Main / Sub Panels</h2>
-      <div id="panelsList"></div>
-    </div>
-
-    <!-- RIGHT COLUMN: Add Panel + Drop Tag -->
-    <div>
-      <button class="reset-btn" style="width:100%; justify-content:center; margin-bottom:22px; background:var(--panel-2); color:var(--amber); border-color:var(--amber);" onclick="FWB.addPanel()">
-        <svg viewBox="0 0 24 24" style="stroke:var(--amber);"><path d="M12 5v14M5 12h14"/></svg>
-        Add Panel
-      </button>
-
-      <!-- DROP TAGS (repeatable — e.g. independent Top + Bottom tags, each own size/B2B) -->
-      <div class="card">
-        <h2>Drop Tags</h2>
-        <div id="dropTagsList"></div>
-        <button class="reset-btn" style="width:100%; justify-content:center; margin-top:4px; background:var(--panel-2); color:var(--amber); border-color:var(--amber);" onclick="FWB.addDropTag()">
-          <svg viewBox="0 0 24 24" style="stroke:var(--amber);"><path d="M12 5v14M5 12h14"/></svg>
-          Add Drop Tag
-        </button>
+  <!-- ===== STEP 2: CHECK ===== -->
+  <section id="checkSection" aria-labelledby="checkTitle" style="scroll-margin-top:12px;">
+    <div class="step-head">
+      <span class="step-num" aria-hidden="true">2</span>
+      <div class="grow">
+        <h2 id="checkTitle">Check the details</h2>
+        <p class="step-sub" id="checkSub">Make sure every size matches the drawing. Once you've calculated, the results below refresh by themselves whenever you change something.</p>
       </div>
     </div>
-  </div>
 
-  <button class="calc" onclick="FWB.calculate()">Calculate Struts</button>
+    <div class="scan-review" id="scanReview" hidden>
+      <span class="msg" id="scanReviewMsg"></span>
+      <button type="button" class="btn btn-sm" id="scanReviewBtn" onclick="FWB.markAllChecked()">Mark all as checked</button>
+    </div>
 
-  <div class="results" id="fwbResults">
+    <div class="section-label"><span>Panels</span></div>
+    <div id="panelsList"></div>
+    <button type="button" class="btn btn-add" onclick="FWB.addPanel()">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      Add another panel
+    </button>
+
+    <div class="section-label" style="margin-top:28px;"><span>Drop tags</span><span style="text-transform:none; letter-spacing:0; font-weight:500; font-size:.78rem;">Always 2 struts each, cut to width &minus; 100mm, same stiffener type as Panel 1</span></div>
+    <div id="dropTagsList"></div>
+    <button type="button" class="btn btn-add" onclick="FWB.addDropTag()">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      Add a drop tag
+    </button>
+
+    <div class="calc-row">
+      <button type="button" class="btn btn-primary btn-lg" id="calcBtn" onclick="FWB.calculate()">Calculate struts</button>
+      <div class="live-note" id="liveNote">Press Enter in any box, or this button, to calculate.</div>
+    </div>
+  </section>
+
+  <!-- ===== STEP 3: RESULTS ===== -->
+  <div class="results" id="fwbResults" style="scroll-margin-top:12px;">
+
+    <div class="step-head" id="resultsHead">
+      <span class="step-num" aria-hidden="true">3</span>
+      <div class="grow">
+        <h2>Review the results</h2>
+        <p class="step-sub">Check the diagrams and numbers against the drawing. They update automatically when you change anything in step 2.</p>
+      </div>
+    </div>
+
+    <div class="alert err" id="staleBanner" role="alert" hidden></div>
+
+    <div id="mainWarnings"></div>
 
     <div class="summary-strip" id="summaryStrip"></div>
 
     <div class="card" id="stpPasteCard">
-      <h2>Summary To Cut</h2>
-      <ul id="cutSummaryList" style="list-style:none; margin:0 0 18px; padding:0; font-family:'IBM Plex Mono',monospace; font-size:.85rem;"></ul>
-      <label>Ready for Strut Calculator</label>
-      <div class="hint" style="margin-top:-3px; margin-bottom:8px;">Preview of what gets sent across — or import it straight away without printing first.</div>
-      <textarea id="stpPasteText" readonly rows="8" style="width:100%; box-sizing:border-box; background:var(--panel-2); border:1px solid var(--line); border-radius:6px; color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:.82rem; padding:10px 11px; resize:vertical;" onclick="this.select()"></textarea>
-      <button type="button" class="reset-btn" id="copyStpBtn" style="margin-top:12px;" onclick="Shell.openImportModal()">
-        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-        <span id="copyStpBtnLabel">Import to Strut Calculator</span>
-      </button>
+      <h2>Summary to cut</h2>
+      <ul id="cutSummaryList"></ul>
+      <details class="help">
+        <summary>See the text that gets sent to the Strut Calculator</summary>
+        <textarea id="stpPasteText" readonly rows="8" onclick="this.select()" aria-label="Text sent to the Strut Calculator"></textarea>
+      </details>
     </div>
-
-    <div id="mainWarnings"></div>
 
     <div id="panelDiagramsContainer"></div>
 
     <div id="dtDiagramsContainer"></div>
 
-    <div class="card">
-      <h2>Full Strut Schedule</h2>
-      <table id="scheduleTable">
-        <thead>
-          <tr><th>#</th><th>Component</th><th>Type</th><th>Length (mm)</th><th>Center (design)</th><th>Ruler Mark (edge)</th><th>Spacing to next</th></tr>
-        </thead>
-        <tbody id="scheduleBody"></tbody>
-      </table>
+    <div class="card schedule-card">
+      <h2>Full strut schedule</h2>
+      <div class="table-wrap">
+        <table id="scheduleTable">
+          <thead>
+            <tr><th>#</th><th>Component</th><th>Type</th><th>Length (mm)</th><th>Center (design)</th><th>Ruler Mark (edge)</th><th>Spacing to next</th></tr>
+          </thead>
+          <tbody id="scheduleBody"></tbody>
+        </table>
+      </div>
     </div>
 
-    <!-- Final step of the workflow: scan -> review -> confirm -> print. Kept at the very bottom on purpose. -->
-    <div class="card" id="printStepCard">
-      <h2>Print-Ready PDF</h2>
-      <div class="hint" style="margin:-4px 0 14px;">Last step &mdash; once the values and diagrams above look right, print the landscape workshop sheet.</div>
-      <button class="reset-btn" style="background:#eef6ff; color:#1b6fb0; border-color:#1b6fb0;" onclick="FWB.printSchedule()">
-        <svg viewBox="0 0 24 24" style="stroke:#1b6fb0;"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-        Printable PDF (Landscape)
-      </button>
+    <!-- ===== STEP 4: PRINT & SEND — always the very last thing on the page ===== -->
+    <div class="card finish-card" id="printStepCard" style="scroll-margin-top:12px;">
+      <div class="step-head" style="margin-bottom:14px;">
+        <span class="step-num" aria-hidden="true">4</span>
+        <div class="grow">
+          <h2>Print &amp; send on</h2>
+          <p class="step-sub">Last step &mdash; once the numbers and diagrams above match the drawing.</p>
+        </div>
+      </div>
+      <div class="finish-actions">
+        <button type="button" class="btn btn-primary btn-lg" id="printBtn" onclick="FWB.printSchedule()">
+          <svg viewBox="0 0 24 24"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Printable PDF (Landscape)
+        </button>
+        <button type="button" class="btn" id="copyStpBtn" onclick="Shell.openImportModal()">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+          <span id="copyStpBtnLabel">Send to Strut &amp; Aluminium calculators</span>
+        </button>
+      </div>
+      <p class="finish-note" id="finishNote">Printing also offers to send this board's struts and sheet sizes to the Strut and Aluminium calculators, then clears this tab ready for the next drawing. Prefer not to print? Use the second button.</p>
     </div>
 
   </div>
 </div>
 
-
+<!-- Always-visible "what's next" bar: live totals once calculated, otherwise the next thing to do -->
+<div class="fwb-bar" id="fwbBar" role="region" aria-label="Status and next step">
+  <div class="fwb-bar-inner">
+    <div class="bar-msg todo" id="fwbBarMsg" role="status" aria-live="polite"><span class="dot" aria-hidden="true"></span><span class="txt" id="fwbBarTxt"></span></div>
+    <button type="button" class="btn btn-primary" id="fwbBarBtn" onclick="FWB.barAction()">Calculate struts</button>
+  </div>
+</div>
 
 </div><!-- /.fwb-app -->
 
@@ -1090,6 +1895,9 @@ let panelIds = [];
 let panelCounter = 0;
 let dropTagIds = [];
 let dropTagCounter = 0;
+// Where the current job is up to. live = results have been calculated and now follow every edit.
+const flow = {live:false, stale:false, attempted:false, edited:false, scanDone:false, ready:false,
+              issues:[], problems:[], timer:null, totals:null};
 
 // ===== AI Drawing Import state =====
 let selectedDrawingFile = null;
@@ -1101,167 +1909,188 @@ let originalDrawingImageMediaType = null;
 let currentRotationDegrees = 0;
 let importedDrawingIsPdf = false;
 
+// ---- small markup helpers for the form -----------------------------------------------------
+// Number box with its unit tucked inside the right edge. The <label> wraps the input, so clicking
+// the label text focuses the box and screen readers announce the two together.
+function fieldNum(label, cls, value, o){
+  o = o || {};
+  const min = (o.min != null) ? ` min="${o.min}"` : '';
+  const pad = o.pad ? ` style="padding-right:${o.pad}px"` : '';
+  return `<label class="field"><span class="lbl">${label}</span><span class="inwrap"><input type="number" inputmode="decimal" autocomplete="off" class="${cls}" value="${value}"${min}${pad}><span class="unit">${o.unit || 'mm'}</span></span></label>`;
+}
+// Long explanations live behind an "i" instead of sitting open on the form all day.
+function helpBlock(summary, bodyHtml){
+  return `<details class="help"><summary>${summary}</summary><div class="help-body">${bodyHtml}</div></details>`;
+}
+// Two/three-way "Auto | Manual" switch. Real buttons (keyboard + screen-reader friendly); the
+// click handlers and data-* attributes are the same ones the logic below has always used.
+function segHTML(ariaLabel, dataAttr, handler, items){
+  return `<div class="toggle-row" role="group" aria-label="${ariaLabel}">` + items.map(it =>
+    `<button type="button" class="toggle-btn${it[2] ? ' active' : ''}" aria-pressed="${it[2] ? 'true' : 'false'}" ${dataAttr}="${it[0]}" onclick="FWB.${handler}(this)">${it[1]}</button>`
+  ).join('') + `</div>`;
+}
+function setSegActive(btn){
+  const row = btn.closest('.toggle-row');
+  row.querySelectorAll('.toggle-btn').forEach(b=>{ b.classList.remove('active'); b.setAttribute('aria-pressed','false'); });
+  btn.classList.add('active');
+  btn.setAttribute('aria-pressed','true');
+}
+
+// B2B tick-box + offset mode (Auto/Manual) for one panel type. Rectangular and Chevron panels each
+// get their own copy, inside .rectOnly / .chevronOnly, because the offset logic reads from there.
+function optionsBlockHTML(kind){
+  const isRect = kind === 'rect';
+  const manualHint = isRect
+    ? 'Overrides everything else &mdash; both the default 100mm / 100mm and the B2B 90 / 150mm rule. Only the two outermost struts move; joiner spacing is untouched.'
+    : 'Overrides everything else &mdash; both the default 100mm / 100mm and the B2B 90 / 150mm rule.';
+  const b2bHelp = helpBlock('How B2B and offsets work',
+    `<p>Ticking <b>B2B</b> switches the bottom/top strut offset from the usual 100mm / 100mm to the asymmetric B2B rule. <b>Front</b> = 90mm bottom / 150mm top${isRect ? ' (only the two outermost struts move &mdash; joiner spacing is untouched)' : ''}.</p>
+     <p>Not sure which of the two matching drawings this board is? After calculating, press <b>Offset Calculate</b> above the diagram. Each press flips between Front (90mm bottom / 150mm top) and Back (150mm bottom / 90mm top), without recalculating anything else.</p>
+     <p><b>Manual</b> offset ignores all of that and uses the two values you type.</p>`);
+  return `
+    <div class="${isRect ? 'rectOnly' : 'chevronOnly'}"${isRect ? '' : ' style="display:none;"'}>
+      <label class="check"><input type="checkbox" class="${isRect ? 'isB2BRect' : 'isB2B'}"><span>Back-to-Back (B2B) with another sign</span></label>
+      <div class="field" style="margin-top:14px;">
+        <span class="lbl">Offset from the panel edges</span>
+        ${segHTML('Offset mode', 'data-offsetmode', 'setOffsetMode', [['auto','Auto',true],['manual','Manual',false]])}
+      </div>
+      <div class="manualOffsetFields subblock" style="display:none;">
+        <div class="field-row">
+          ${fieldNum('Inset from bottom','manualOffsetBottom',100,{min:0})}
+          ${fieldNum('Inset from top','manualOffsetTop',100,{min:0})}
+        </div>
+        <div class="hint">${manualHint}</div>
+      </div>
+      ${b2bHelp}
+    </div>`;
+}
+
 function panelFieldsHTML(){
   return `
     <div class="panel-instance-header">
       <h3>Panel</h3>
-      <button class="remove-panel-btn" onclick="FWB.removePanel(this.closest('.panel-instance'))" title="Remove panel">&times;</button>
-    </div>
-    <label>Panel type</label>
-    <select class="panelType" onchange="FWB.togglePanelTypeFields(this.closest('.panel-instance'))">
-      <option value="Main Panel">Main Panel</option>
-      <option value="Sub Panel">Sub Panel</option>
-      <option value="Chevron Panel">Chevron Panel (pointed end)</option>
-    </select>
-
-    <div class="row2">
-      <div>
-        <label>Width (mm)</label>
-        <input type="number" class="mpWidth" value="4000" min="1">
-      </div>
-      <div>
-        <label>Height (mm)</label>
-        <input type="number" class="mpHeight" value="2350" min="1">
-      </div>
+      <span class="panel-meta"></span>
+      <button type="button" class="remove-panel-btn" title="Remove this panel" aria-label="Remove this panel" onclick="FWB.removePanel(this.closest('.panel-instance'))">&times;</button>
     </div>
 
-    <div class="rectOnly">
-      <div class="hint">Struts run parallel to the width. Panels over 1200mm high are usually stacked in sections with a joiner between each &mdash; you decide how many sections and how big each cut is.</div>
+    <div class="panel-grid">
+      <div class="pcol">
+        <label class="field">
+          <span class="lbl">Panel type</span>
+          <select class="panelType" onchange="FWB.togglePanelTypeFields(this.closest('.panel-instance'))">
+            <option value="Main Panel">Main Panel</option>
+            <option value="Sub Panel">Sub Panel</option>
+            <option value="Chevron Panel">Chevron Panel (pointed end)</option>
+          </select>
+        </label>
 
-      <label>Number of height sections</label>
-      <select class="numSections">
-        <option value="1">Single panel, no joiner</option>
-        <option value="2" selected>Two sections, one joiner</option>
-        <option value="3">Three sections, two joiners</option>
-      </select>
-
-      <div class="sectionInputs subblock"></div>
-
-      <label>Corner Radius (mm) &mdash; aka Border Radius / Corner Crop</label>
-      <input type="number" class="cropDeg" value="300" min="0">
-      <div class="hint">&le;100mm &rarr; 50mm off each end &nbsp;|&nbsp; 101&ndash;200mm &rarr; 100mm off each end &nbsp;|&nbsp; 201&ndash;300mm &rarr; 125mm off each end &nbsp;|&nbsp; &gt;300mm &rarr; 150mm off each end. Applies to the two outermost (End) struts only &mdash; never to Joiners. Some drawings label this "Border Radius" &mdash; same measurement, same field.</div>
-
-      <div class="checkline">
-        <input type="checkbox" class="isB2BRect">
-        <label>This panel is Back-to-Back (B2B) with another sign</label>
-      </div>
-      <div class="hint">Ticking this switches the bottom/top strut offset from the usual 100mm/100mm to the asymmetric 90mm/150mm B2B rule (only the outermost bottom and top offsets change &mdash; internal joiner spacing is untouched). If you don't yet know which of the two matching drawings this board is, use the "Offset Calculate" button under this panel's diagram after calculating &mdash; each press flips between the Front (90mm bottom / 150mm top) and Back (150mm bottom / 90mm top) offset, so you can match it to the right drawing without recalculating anything else.</div>
-
-      <label>Offset mode</label>
-      <div class="toggle-row">
-        <div class="toggle-btn active" data-offsetmode="auto" onclick="FWB.setOffsetMode(this)">Auto</div>
-        <div class="toggle-btn" data-offsetmode="manual" onclick="FWB.setOffsetMode(this)">Manual</div>
-      </div>
-      <div class="manualOffsetFields subblock" style="display:none;">
-        <div class="row2">
-          <div>
-            <label>Inset from bottom (mm)</label>
-            <input type="number" class="manualOffsetBottom" value="100" min="0">
-          </div>
-          <div>
-            <label>Inset from top (mm)</label>
-            <input type="number" class="manualOffsetTop" value="100" min="0">
-          </div>
+        <div class="field-row">
+          ${fieldNum('Width','mpWidth',4000,{min:1})}
+          ${fieldNum('Height','mpHeight',2350,{min:1})}
         </div>
-        <div class="hint">Overrides everything above &mdash; both the default 100mm/100mm and the B2B 90/150mm rule. Only the two outermost struts move; internal joiner spacing is untouched.</div>
-      </div>
-    </div>
 
-    <div class="chevronOnly" style="display:none;">
-      <div class="hint">Chevron panels are a single sheet (no height stacking/joiner). Every strut is shortened by the Point Cut, not just the outer ones.</div>
-
-      <label>Point cut</label>
-      <select class="chevronTaper" onchange="FWB.toggleChevronTaperFields(this.closest('.panel-instance'))">
-        <option value="one">Pointed on one end only</option>
-        <option value="both">Pointed on both ends</option>
-      </select>
-
-      <div class="chevronOneEnd">
-        <div class="row2">
-          <div>
-            <label>Point cut (mm)</label>
-            <input type="number" class="pointCut" value="272" min="0">
-          </div>
-          <div>
-            <label>Point direction</label>
-            <select class="pointDir" onchange="FWB.onPointDirectionChange(this.closest('.panel-instance'))">
-              <option value="right">Points right</option>
-              <option value="left">Points left</option>
+        <div class="group rectGroup" role="group" aria-label="Height sections">
+          <h4 class="group-title">Height sections</h4>
+          <label class="field">
+            <span class="lbl">Number of sections</span>
+            <select class="numSections">
+              <option value="1">Single panel, no joiner</option>
+              <option value="2" selected>Two sections, one joiner</option>
+              <option value="3">Three sections, two joiners</option>
             </select>
-          </div>
+          </label>
+          <div class="sectionInputs"></div>
+          ${helpBlock('Why split a panel into sections?',
+            `<p>Struts run parallel to the width. Aluminium sheet only comes up to 1200mm high, so a taller panel is stacked in sections with a joiner between each &mdash; one sheet per section.</p>
+             <p>You decide how many sections and how tall each cut is. The top section is worked out for you: whatever is left of the total height.</p>`)}
         </div>
-        <div class="hint">Strut length = Width &minus; Point cut &minus; 50mm.</div>
-      </div>
-      <div class="chevronBothEnds" style="display:none;">
-        <div class="row2">
-          <div>
-            <label>Point cut &mdash; left (mm)</label>
-            <input type="number" class="pointCutLeft" value="272" min="0">
+
+        <div class="group chevGroup" role="group" aria-label="Point cut" style="display:none;">
+          <h4 class="group-title">Point cut</h4>
+          <label class="field">
+            <span class="lbl">Pointed on</span>
+            <select class="chevronTaper" onchange="FWB.toggleChevronTaperFields(this.closest('.panel-instance'))">
+              <option value="one">One end only</option>
+              <option value="both">Both ends</option>
+            </select>
+          </label>
+          <div class="chevronOneEnd" style="margin-top:14px;">
+            <div class="field-row" style="margin-top:0;">
+              ${fieldNum('Point cut','pointCut',272,{min:0})}
+              <label class="field">
+                <span class="lbl">Point direction</span>
+                <select class="pointDir" onchange="FWB.onPointDirectionChange(this.closest('.panel-instance'))">
+                  <option value="right">Points right</option>
+                  <option value="left">Points left</option>
+                </select>
+              </label>
+            </div>
           </div>
-          <div>
-            <label>Point cut &mdash; right (mm)</label>
-            <input type="number" class="pointCutRight" value="272" min="0">
+          <div class="chevronBothEnds" style="display:none; margin-top:14px;">
+            <div class="field-row" style="margin-top:0;">
+              ${fieldNum('Point cut &mdash; left','pointCutLeft',272,{min:0})}
+              ${fieldNum('Point cut &mdash; right','pointCutRight',272,{min:0})}
+            </div>
           </div>
+          ${helpBlock('How the point cut shortens the struts',
+            `<p>A chevron is a single sheet &mdash; no height stacking and no joiners.</p>
+             <p>Every strut starts at the panel width minus 100mm, then is shortened by the point cut in proportion to how far that strut sits from the height of the point. A strut level with the point isn't shortened at all; the outermost struts lose the most. With both ends pointed, the left and right point cuts are added together.</p>`)}
         </div>
-        <div class="hint">Strut length = Width &minus; Point cut (left) &minus; Point cut (right).</div>
       </div>
 
-      <div class="checkline">
-        <input type="checkbox" class="isB2B">
-        <label>This chevron is Back-to-Back (B2B) with another sign</label>
-      </div>
-      <div class="hint">Ticking this switches the strut offset from the usual 100mm/100mm to the asymmetric 90mm/150mm B2B rule. If you don't yet know which of the two matching drawings this board is (or whether the B2B partner is a separate sign), use the "Offset Calculate" button under this panel's diagram after calculating &mdash; each press flips between the Front (90mm bottom / 150mm top) and Back (150mm bottom / 90mm top) offset, so you can match it to the right drawing without recalculating anything else.</div>
-
-      <label>Offset mode</label>
-      <div class="toggle-row">
-        <div class="toggle-btn active" data-offsetmode="auto" onclick="FWB.setOffsetMode(this)">Auto</div>
-        <div class="toggle-btn" data-offsetmode="manual" onclick="FWB.setOffsetMode(this)">Manual</div>
-      </div>
-      <div class="manualOffsetFields subblock" style="display:none;">
-        <div class="row2">
-          <div>
-            <label>Inset from bottom (mm)</label>
-            <input type="number" class="manualOffsetBottom" value="100" min="0">
+      <div class="pcol">
+        <div class="group" role="group" aria-label="Struts">
+          <h4 class="group-title">Struts</h4>
+          <div class="field-row" style="margin-top:0;">
+            <div class="rectCrop">${fieldNum('Corner radius','cropDeg',300,{min:0})}</div>
+            <div class="chevCrop" style="display:none;">${fieldNum('Corner radius','chevronCropDeg',125,{min:0})}</div>
+            ${fieldNum('Max spacing','maxSpacing',450,{min:1})}
           </div>
-          <div>
-            <label>Inset from top (mm)</label>
-            <input type="number" class="manualOffsetTop" value="100" min="0">
-          </div>
+          <div class="hint maxSpacingHint">Used to auto-calculate strut count. Defaults to 350mm if left blank.</div>
+          <label class="field" style="margin-top:14px;">
+            <span class="lbl">Stiffener type</span>
+            <select class="stiffType">
+              <option value="B">B-Stiffeners (B-struts, Joiner = J-bstrut + Z-Struts)</option>
+              <option value="A">A-Stiffeners (A-struts, Joiner = J-astrut + Z-Struts)</option>
+            </select>
+          </label>
+          <div class="rectCropHelp">${helpBlock('How the corner radius changes the End struts',
+            `<p>Corner radius (some drawings call it Border Radius or Corner Crop &mdash; same measurement) decides how much is taken off each end of the two outermost End struts:</p>
+             <p>up to 100mm &rarr; 50mm off each end<br>101&ndash;200mm &rarr; 100mm off each end<br>201&ndash;300mm &rarr; 125mm off each end<br>over 300mm &rarr; 150mm off each end</p>
+             <p>Joiners are never cut back.</p>`)}</div>
+          <div class="chevCropHelp" style="display:none;">${helpBlock('What the corner radius does here',
+            `<p>Recorded for the drawing and print schedule only. On a chevron the point cut already decides every strut length, so this never changes a length. Some drawings call it Border Radius &mdash; same measurement, same field.</p>`)}</div>
         </div>
-        <div class="hint">Overrides everything above &mdash; both the default 100mm/100mm and the B2B 90/150mm rule.</div>
-      </div>
 
-      <label>Corner Radius (mm) &mdash; aka Border Radius / Corner Crop</label>
-      <input type="number" class="chevronCropDeg" value="125" min="0">
-      <div class="hint">Recorded for the drawing/print schedule only &mdash; the Point Cut formula already governs strut length on a Chevron panel, so this doesn't change any lengths. Some drawings label this "Border Radius" &mdash; same measurement, same field.</div>
+        <div class="group" role="group" aria-label="Options">
+          <h4 class="group-title">Options</h4>
+          ${optionsBlockHTML('rect')}
+          ${optionsBlockHTML('chev')}
+          <div class="field" style="margin-top:14px;">
+            <span class="lbl">Number of struts</span>
+            ${segHTML('Strut count mode', 'data-mode', 'setPanelMode', [['auto','Auto-calculate',true],['manual','Manual count',false]])}
+          </div>
+          <div class="manualBlock subblock" style="display:none;"></div>
+        </div>
+      </div>
     </div>
 
-    <label>Maximum allowable spacing (mm)</label>
-    <input type="number" class="maxSpacing" value="450" min="1">
-    <div class="hint maxSpacingHint">Used to auto-calculate strut count. Defaults to 350mm if left blank.</div>
-
-    <label>Stiffener type</label>
-    <select class="stiffType">
-      <option value="B">B-Stiffeners (B-struts, Joiner = J-bstrut + Z-Struts)</option>
-      <option value="A">A-Stiffeners (A-struts, Joiner = J-astrut + Z-Struts)</option>
-    </select>
-
-    <label>Strut count mode</label>
-    <div class="toggle-row">
-      <div class="toggle-btn active" data-mode="auto" onclick="FWB.setPanelMode(this)">Auto-calculate</div>
-      <div class="toggle-btn" data-mode="manual" onclick="FWB.setPanelMode(this)">Manual count</div>
-    </div>
-
-    <div class="manualBlock subblock" style="display:none;"></div>
     <div class="heightLimitError"></div>
+    <div class="panel-issues"></div>
   `;
 }
 
+// The rectangular-only and chevron-only bits of a panel are shown/hidden together. Anything that
+// belongs to one type carries one of these classes.
+const RECT_SEL = '.rectOnly, .rectGroup, .rectCrop, .rectCropHelp';
+const CHEV_SEL = '.chevronOnly, .chevGroup, .chevCrop, .chevCropHelp';
+
 function togglePanelTypeFields(panelEl){
   const isChevron = panelEl.querySelector('.panelType').value === 'Chevron Panel';
-  panelEl.querySelector('.rectOnly').style.display = isChevron ? 'none' : 'block';
-  panelEl.querySelector('.chevronOnly').style.display = isChevron ? 'block' : 'none';
+  panelEl.querySelectorAll(RECT_SEL).forEach(e=>{ e.style.display = isChevron ? 'none' : ''; });
+  panelEl.querySelectorAll(CHEV_SEL).forEach(e=>{ e.style.display = isChevron ? '' : 'none'; });
   validateSectionHeights(panelEl);
+  updatePanelMeta(panelEl);
 }
 
 function toggleChevronTaperFields(panelEl){
@@ -1282,6 +2111,26 @@ function onPointDirectionChange(panelEl){
   panelEl.querySelector('.pointCut').value = direction === 'left' ? left : right;
 }
 
+// One-line summary shown in the card header ("4620 × 1950mm · 2 sections"), kept in step with the fields.
+function updatePanelMeta(el){
+  if(!el) return;
+  const meta = el.querySelector('.panel-meta');
+  if(!meta) return;
+  const num = sel => { const n = el.querySelector(sel); const v = n ? parseFloat(n.value) : NaN; return isFinite(v) ? Math.round(v) : null; };
+  let w, h, extra = '';
+  if(el.querySelector('.dtWidth')){
+    w = num('.dtWidth'); h = num('.dtHeight');
+  } else {
+    w = num('.mpWidth'); h = num('.mpHeight');
+    if(isChevronPanel(el)) extra = ' · chevron';
+    else {
+      const n = getNumSections(el);
+      extra = n > 1 ? ` · ${n} sections` : ' · single sheet';
+    }
+  }
+  meta.textContent = (w != null && h != null) ? `${w} × ${h}mm${extra}` : '';
+}
+
 function addPanel(){
   panelCounter++;
   const pid = panelCounter;
@@ -1300,15 +2149,27 @@ function addPanel(){
   buildManualBlock(wrap);
   updateMaxSpacingState(wrap);
   refreshPanelLabels();
+  updatePanelMeta(wrap);
+  afterStructureChange();
   return wrap;
 }
 
+// Removing a panel throws away everything typed into it, so ask first.
 function removePanel(wrap){
   if(panelIds.length<=1) return; // always keep at least one panel
-  const pid = parseInt(wrap.dataset.panelId);
-  panelIds = panelIds.filter(p=>p!==pid);
-  wrap.remove();
-  refreshPanelLabels();
+  const name = wrap.querySelector('.panel-instance-header h3').textContent;
+  confirmDialog({
+    title: `Remove ${name}?`,
+    text: `Everything entered for ${name} will be deleted.`,
+    okLabel: 'Remove panel', cancelLabel: 'Keep it'
+  }).then(ok=>{
+    if(!ok || !wrap.isConnected) return;
+    const pid = parseInt(wrap.dataset.panelId);
+    panelIds = panelIds.filter(p=>p!==pid);
+    wrap.remove();
+    refreshPanelLabels();
+    afterStructureChange();
+  });
 }
 
 function refreshPanelLabels(){
@@ -1320,10 +2181,11 @@ function refreshPanelLabels(){
   });
 }
 
+// Strut count mode (Auto / Manual). Only flips the buttons in ITS OWN switch — it used to clear every
+// switch in the panel, which wiped the highlight off the Offset mode buttons too.
 function setPanelMode(el){
   const panelEl = el.closest('.panel-instance');
-  panelEl.querySelectorAll('.toggle-row .toggle-btn').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
+  setSegActive(el);
   panelEl.dataset.mode = el.dataset.mode;
   buildManualBlock(panelEl);
   updateMaxSpacingState(panelEl);
@@ -1342,45 +2204,41 @@ function dropTagFieldsHTML(){
   return `
     <div class="panel-instance-header">
       <h3>Drop Tag</h3>
-      <button class="remove-panel-btn" onclick="FWB.removeDropTag(this.closest('.panel-instance'))" title="Remove drop tag">&times;</button>
+      <span class="panel-meta"></span>
+      <button type="button" class="remove-panel-btn" title="Remove this drop tag" aria-label="Remove this drop tag" onclick="FWB.removeDropTag(this.closest('.panel-instance'))">&times;</button>
     </div>
-    <div class="row2">
-      <div>
-        <label>Drop tag width (mm)</label>
-        <input type="number" class="dtWidth" value="1800" min="1">
-      </div>
-      <div>
-        <label>Drop tag height (mm)</label>
-        <input type="number" class="dtHeight" value="270" min="1">
-      </div>
-    </div>
-    <label>Corner radius (degrees) &mdash; reference only</label>
-    <input type="number" class="dtRadius" value="40" min="0">
-    <div class="hint">Stiffener type automatically matches Panel 1's stiffener type. Always 2 struts, cut to width &minus; 100mm. Inset from top/bottom scales with height: 30mm at 151mm and below, 50mm from 152&ndash;400mm, 65mm above that.</div>
 
-    <div class="checkline">
-      <input type="checkbox" class="isDtB2B">
-      <label>This drop tag is Back-to-Back (B2B) with another sign</label>
-    </div>
-    <div class="hint">Ticking this switches the top/bottom inset from the usual height-scaled value to a fixed 50mm. If you don't yet know which of the two matching drawings this board is, use the "Offset Calculate" button under this drop tag's diagram after calculating &mdash; each press flips between the Front (50mm from top/bottom) and Back (85mm from top/bottom) inset, so you can match it to the right drawing without recalculating anything else.</div>
-
-    <label>Offset mode</label>
-    <div class="toggle-row">
-      <div class="toggle-btn active" data-dtmode="auto" onclick="FWB.setDtMode(this)">Auto</div>
-      <div class="toggle-btn" data-dtmode="manual" onclick="FWB.setDtMode(this)">Manual</div>
-    </div>
-    <div class="dtManualFields subblock" style="display:none;">
-      <div class="row2">
-        <div>
-          <label>Inset from top (mm)</label>
-          <input type="number" class="dtManualTop" value="50" min="0">
+    <div class="panel-grid">
+      <div class="pcol">
+        <div class="field-row">
+          ${fieldNum('Width','dtWidth',1800,{min:1})}
+          ${fieldNum('Height','dtHeight',270,{min:1})}
         </div>
-        <div>
-          <label>Inset from bottom (mm)</label>
-          <input type="number" class="dtManualBottom" value="85" min="0">
+        <div class="field-row">
+          ${fieldNum('Corner radius (reference only)','dtRadius',40,{min:0})}
         </div>
       </div>
-      <div class="hint">Overrides everything above &mdash; both the height-scaled auto inset and the B2B 50/85mm rule. Use this when you're placing struts by hand for a specific drawing.</div>
+
+      <div class="pcol">
+        <div class="group" role="group" aria-label="Drop tag options">
+          <h4 class="group-title">Options</h4>
+          <label class="check"><input type="checkbox" class="isDtB2B"><span>Back-to-Back (B2B) with another sign</span></label>
+          <div class="field" style="margin-top:14px;">
+            <span class="lbl">Offset from the top and bottom edges</span>
+            ${segHTML('Drop tag offset mode', 'data-dtmode', 'setDtMode', [['auto','Auto',true],['manual','Manual',false]])}
+          </div>
+          <div class="dtManualFields subblock" style="display:none;">
+            <div class="field-row">
+              ${fieldNum('Inset from top','dtManualTop',50,{min:0})}
+              ${fieldNum('Inset from bottom','dtManualBottom',85,{min:0})}
+            </div>
+            <div class="hint">Overrides everything else &mdash; both the height-scaled auto inset and the B2B 50 / 85mm rule. Use this when you're placing struts by hand for a specific drawing.</div>
+          </div>
+          ${helpBlock('How the inset is worked out',
+            `<p>Auto inset scales with the tag's height: 30mm at 151mm and below, 50mm from 152&ndash;400mm, 65mm above that.</p>
+             <p>Ticking <b>B2B</b> switches to a fixed 50mm (Front). If you don't know which of the two matching drawings this tag is, press <b>Offset Calculate</b> above its diagram after calculating &mdash; each press flips between Front (50mm from top/bottom) and Back (85mm from top/bottom).</p>`)}
+        </div>
+      </div>
     </div>
   `;
 }
@@ -1396,14 +2254,29 @@ function addDropTag(){
   wrap.innerHTML = dropTagFieldsHTML();
   document.getElementById('dropTagsList').appendChild(wrap);
   refreshDropTagLabels();
+  updatePanelMeta(wrap);
+  afterStructureChange();
   return wrap;
 }
 
+// A drop tag that's still completely empty is removed straight away; one with sizes in it asks first.
 function removeDropTag(wrap){
-  const did = parseInt(wrap.dataset.dropTagId);
-  dropTagIds = dropTagIds.filter(d=>d!==did);
-  wrap.remove();
-  refreshDropTagLabels();
+  const filled = ['.dtWidth','.dtHeight'].some(s=>{ const e = wrap.querySelector(s); return e && e.value !== ''; });
+  const doRemove = ()=>{
+    if(!wrap.isConnected) return;
+    const did = parseInt(wrap.dataset.dropTagId);
+    dropTagIds = dropTagIds.filter(d=>d!==did);
+    wrap.remove();
+    refreshDropTagLabels();
+    afterStructureChange();
+  };
+  if(!filled){ doRemove(); return; }
+  const name = wrap.querySelector('.panel-instance-header h3').textContent;
+  confirmDialog({
+    title: `Remove ${name}?`,
+    text: `The sizes entered for ${name} will be deleted.`,
+    okLabel: 'Remove drop tag', cancelLabel: 'Keep it'
+  }).then(ok=>{ if(ok) doRemove(); });
 }
 
 function refreshDropTagLabels(){
@@ -1418,8 +2291,9 @@ function refreshDropTagLabels(){
 // alone would always hit whichever one comes first, same bug that hit the isB2B checkboxes.
 function setOffsetMode(el){
   const container = el.closest('.rectOnly') || el.closest('.chevronOnly');
-  container.querySelectorAll('.toggle-btn[data-offsetmode]').forEach(b=>b.classList.remove('active'));
+  container.querySelectorAll('.toggle-btn[data-offsetmode]').forEach(b=>{ b.classList.remove('active'); b.setAttribute('aria-pressed','false'); });
   el.classList.add('active');
+  el.setAttribute('aria-pressed','true');
   container.dataset.offsetMode = el.dataset.offsetmode;
   const isManual = el.dataset.offsetmode === 'manual';
   container.querySelector('.manualOffsetFields').style.display = isManual ? 'block' : 'none';
@@ -1433,8 +2307,9 @@ function setOffsetMode(el){
 
 function setDtMode(el){
   const wrap = el.closest('.panel-instance');
-  wrap.querySelectorAll('.toggle-btn[data-dtmode]').forEach(b=>b.classList.remove('active'));
+  wrap.querySelectorAll('.toggle-btn[data-dtmode]').forEach(b=>{ b.classList.remove('active'); b.setAttribute('aria-pressed','false'); });
   el.classList.add('active');
+  el.setAttribute('aria-pressed','true');
   wrap.dataset.dtMode = el.dataset.dtmode;
   const isManual = el.dataset.dtmode === 'manual';
   wrap.querySelector('.dtManualFields').style.display = isManual ? 'block' : 'none';
@@ -1512,28 +2387,30 @@ function buildSectionInputs(panelEl){
   const n = getNumSections(panelEl);
   const container = panelEl.querySelector('.sectionInputs');
   if(n===1){
-    container.innerHTML = `<div class="hint">Single section &mdash; no joiner, both top and bottom struts are Ends.</div>`;
+    container.innerHTML = `<div class="hint" style="margin-top:12px;">Single section &mdash; no joiner, so the top and bottom struts are both Ends.</div>`;
     validateSectionHeights(panelEl);
+    updatePanelMeta(panelEl);
     return;
   }
   // UI order runs top-to-bottom: ui=0 is Section 1 (TOP, always auto-calculated),
   // ui=n-1 is Section n (BOTTOM). Only ui=1..n-1 (mid/bottom) are editable.
   const editDefaults = n===2 ? [1200] : [900,1000]; // ui=1 (mid) and ui=2 (bottom) for a 3-section job
-  let html='';
+  let rows='';
   for(let ui=0; ui<n; ui++){
+    const name = sectionNameFor(n-1-ui, n); // TOP / MIDDLE / BOTTOM, same words the printed sheet uses
+    const tag = `<span class="sec-tag ${name.split(' ')[0]}">${name}</span>`;
     if(ui===0){
-      html += `<label>Section 1 height &mdash; top (auto-calculated)</label>
-               <input type="number" class="sectionAuto" value="0" readonly style="opacity:.65;cursor:not-allowed;">`;
+      rows += `<label class="field"><span class="lbl">Section 1 ${tag} &mdash; worked out for you</span>
+                 <span class="inwrap"><input type="number" class="sectionAuto" value="0" readonly tabindex="-1" aria-readonly="true"><span class="unit">mm</span></span></label>`;
     } else {
-      const posLabel = (ui===n-1) ? 'bottom' : 'mid';
-      html += `<label>Section ${ui+1} height &mdash; ${posLabel} (mm)</label>
-               <input type="number" class="sectionEdit" data-ui-idx="${ui}" value="${editDefaults[ui-1]}" min="1">`;
+      rows += `<label class="field"><span class="lbl">Section ${ui+1} ${tag}</span>
+                 <span class="inwrap"><input type="number" inputmode="decimal" autocomplete="off" class="sectionEdit" data-ui-idx="${ui}" value="${editDefaults[ui-1]}" min="1"><span class="unit">mm</span></span></label>`;
     }
   }
-  html += `<div class="hint sectionCheck"></div>`;
-  container.innerHTML = html;
+  container.innerHTML = `<div class="sec-wrap"><div class="sec-rows">${rows}</div><div class="sec-preview" aria-hidden="true"></div></div><div class="hint sectionCheck"></div>`;
   container.querySelectorAll('.sectionEdit').forEach(el=>el.addEventListener('input', ()=>updateSectionRemainder(panelEl)));
   updateSectionRemainder(panelEl);
+  updatePanelMeta(panelEl);
 }
 
 // Returns section heights in UI order (top-to-bottom): index 0 = top (auto), index n-1 = bottom.
@@ -1568,10 +2445,19 @@ function updateSectionRemainder(panelEl){
     const total = uiHeights.reduce((a,b)=>a+b,0);
     const height = parseFloat(panelEl.querySelector('.mpHeight').value||0);
     if(top <= 0){
-      chk.innerHTML = `<span style="color:var(--warn)">The mid/bottom sections already meet or exceed the total height &mdash; the auto (top) section would be ${round2(top)}mm. Reduce the section heights below.</span>`;
+      chk.innerHTML = `<span style="color:var(--danger)">The mid/bottom sections already meet or exceed the total height &mdash; the auto (top) section would be ${round2(top)}mm. Reduce the section heights.</span>`;
     } else {
       chk.innerHTML = `Sections total ${round2(total)}mm of ${round2(height)}mm &check;`;
     }
+  }
+  // Little stacked picture of the sections, tallest = biggest cut, so top/bottom is never a guess
+  const prev = panelEl.querySelector('.sec-preview');
+  if(prev){
+    prev.innerHTML = uiHeights.map((h,ui)=>{
+      const name = sectionNameFor(n-1-ui, n);
+      const ok = isFinite(h) && h > 0;
+      return `<div class="sec-seg ${name.split(' ')[0]}" style="flex-grow:${ok ? Math.max(h,1) : 1}">${name}<small>${ok ? round2(h) : '?'}</small></div>`;
+    }).join('');
   }
 }
 
@@ -1581,9 +2467,8 @@ function buildManualBlock(panelEl){
   if(!manualOn){ el.style.display='none'; el.innerHTML=''; return; }
   el.style.display='block';
   el.innerHTML = `
-    <label>Total struts to cut (as given by MRWA &mdash; each Joiner counts as 1, End struts included)</label>
-    <input type="number" class="manualTotalCount" value="0" min="0">
-    <div class="hint manualTotalHint">The 2 End struts and any Joiners are subtracted first (each Joiner = 1 physical strut, even though it's a J-strut + Z-joiner pair). What's left is split as Normal struts across sections by height &mdash; and topped up automatically if needed so no gap exceeds the max spacing above.</div>
+    ${fieldNum('Total struts to cut (as given by MRWA)','manualTotalCount',0,{min:0,unit:'struts',pad:68})}
+    <div class="hint manualTotalHint">Counts every strut: the 2 End struts, plus each Joiner as 1 (even though a Joiner is a J-strut + Z-strut pair). The 2 Ends and any Joiners are taken off first; what's left is split as Normal struts across the sections by height, and topped up automatically if needed so no gap is wider than the max spacing.</div>
     <div class="manualTotalError"></div>
   `;
   el.querySelector('.manualTotalCount').addEventListener('input', ()=>validateManualTotal(panelEl));
@@ -1605,7 +2490,7 @@ function validateManualTotal(panelEl){
   const total = parseInt(totalEl.value||0);
   const minReq = minStiffenerTotal(panelEl);
   if(total < minReq){
-    errEl.innerHTML = `<div class="warn-box">This job needs at least ${minReq} stiffeners (2 End struts + ${minReq-2} Joiner${minReq-2===1?'':'s'}) before any Normal struts. Increase the total.</div>`;
+    errEl.innerHTML = `<div class="alert err">This job needs at least ${minReq} stiffeners (2 End struts + ${minReq-2} Joiner${minReq-2===1?'':'s'}) before any Normal struts. Increase the total.</div>`;
     return true;
   }
   errEl.innerHTML = '';
@@ -1732,7 +2617,7 @@ function validateSectionHeights(panelEl){
   if(isChevronPanel(panelEl)){
     const height = parseFloat(panelEl.querySelector('.mpHeight').value||0);
     if(height <= 1200){ el.innerHTML=''; return false; }
-    el.innerHTML = `<div class="warn-box">The panel height (${round2(height)}mm) exceeds 1200mm. Chevron panels aren't set up for height stacking &mdash; reduce the height, or use a Main/Sub Panel instead if this job needs a joiner.</div>`;
+    el.innerHTML = `<div class="alert err">The panel height (${round2(height)}mm) exceeds 1200mm. Chevron panels aren't set up for height stacking &mdash; reduce the height, or use a Main/Sub Panel instead if this job needs a joiner.</div>`;
     return true;
   }
   const heights = getSectionHeightsPhysical(panelEl);
@@ -1745,7 +2630,7 @@ function validateSectionHeights(panelEl){
   const detail = n===1
     ? `The panel height (${round2(heights[0])}mm) exceeds 1200mm.`
     : `Section${overIdx.length>1?'s':''} ${overIdx.map(o=>round2(o.h)+'mm').join(', ')} exceed 1200mm.`;
-  el.innerHTML = `<div class="warn-box">${detail} Our aluminium sheet stock only comes up to 1200mm high &mdash; increase the number of height sections or reduce the section heights so each cut is 1200mm or under.</div>`;
+  el.innerHTML = `<div class="alert err">${detail} Our aluminium sheet stock only comes up to 1200mm high &mdash; increase the number of height sections or reduce the section heights so each cut is 1200mm or under.</div>`;
   return true;
 }
 
@@ -1788,25 +2673,69 @@ function computeChevronStruts(width, height, isDoubleTaper, pointCut, pointCutLe
   return struts;
 }
 
-function calculate(){
-  const panelEls = Array.from(document.querySelectorAll('#panelsList .panel-instance'));
-  let anyError = false;
-  let firstErrorEl = null;
-  panelEls.forEach(panelEl=>{
-    if(validateSectionHeights(panelEl)){
-      anyError = true;
-      if(!firstErrorEl) firstErrorEl = panelEl.querySelector('.sectionInputs');
+// Runs every input check, paints the messages on the form, and reports whether it's safe to calculate.
+function runChecks(silent){
+  const issues = collectIssues();
+  const blocking = issues.filter(i=>!i.soft);
+  flow.issues = issues;
+  paintIssues(issues);
+  if(blocking.length){
+    // Never leave half-wrong numbers on screen as if they were right: before the first calculation the
+    // results stay hidden; after it they stay visible but greyed out and locked until the fields are fixed.
+    if(!flow.live) document.getElementById('fwbResults').classList.remove('show');
+    refreshStatus();
+    if(!silent){
+      const target = blocking[0].el;
+      if(target){
+        target.scrollIntoView({behavior: smoothBehavior(), block:'center'});
+        try{ target.focus({preventScroll:true}); }catch(e){}
+      }
     }
-    if(panelEl.dataset.mode === 'manual' && validateManualTotal(panelEl)){
-      anyError = true;
-      if(!firstErrorEl) firstErrorEl = panelEl.querySelector('.manualBlock');
-    }
-  });
-  if(anyError){
-    document.getElementById('fwbResults').classList.remove('show');
-    if(firstErrorEl) firstErrorEl.scrollIntoView({behavior:'smooth'});
-    return;
+    return false;
   }
+  return true;
+}
+
+// Sizes that don't fit together show up as struts that are zero/negative length, outside the panel, or
+// out of order (e.g. the edge offsets are bigger than the section is tall). Checked on the raw bottom-to-top
+// order, before sorting, so a reversed pair can't hide. No strut maths is changed — this only refuses to
+// show numbers that couldn't be real.
+function fitProblem(struts, height){
+  for(const s of struts){
+    if(!isFinite(s.length) || s.length <= 0){
+      return `A strut would come out ${isFinite(s.length) ? round2(s.length) + 'mm' : 'an invalid length'} long. Check the width, corner radius and point cut.`;
+    }
+    if(!isFinite(s.posFromBottom)) return 'A strut position came out invalid. Check the height, sections and offsets.';
+  }
+  for(let i=1; i<struts.length; i++){
+    if(!(struts[i].posFromBottom > struts[i-1].posFromBottom)){
+      return "These sizes don't fit together: the offsets from the edges are bigger than a section allows. Check the height, sections and offsets.";
+    }
+  }
+  if(struts.length && (struts[0].posFromBottom < 0 || struts[struts.length-1].posFromBottom > height)){
+    return 'The offsets push a strut outside the panel. Check the height and offsets.';
+  }
+  return '';
+}
+
+// opts.silent = recalculating in the background because something was edited: no scrolling, no
+// error pop-ups beyond the field messages and the status bar.
+function calculate(opts){
+  opts = opts || {};
+  const silent = !!opts.silent;
+  if(!silent) flow.attempted = true;
+  if(flow.timer){ clearTimeout(flow.timer); flow.timer = null; }
+  flow.problems = []; // re-found below if the sizes still don't fit
+
+  if(!runChecks(silent)) return false;
+
+  const prev = lastCalc; // previous results — used to keep each B2B board on the Front/Back side it was flipped to
+  const panelEls = Array.from(document.querySelectorAll('#panelsList .panel-instance'));
+  const keptSide = (idx) => {
+    const old = prev && prev.panels && prev.panels[idx];
+    return (old && old.isB2B && !old.isManualOffset && (old.offsetSide === 'back' || old.offsetSide === 'front')) ? old.offsetSide : 'front';
+  };
+  const problems = []; // {panelEl, msg} — sizes that don't fit together, found after the maths
 
   const panelResults = [];
   panelEls.forEach((panelEl, idx)=>{
@@ -1841,6 +2770,8 @@ function calculate(){
       const buildChevronResult = (label, offsetSide) => {
         const struts = computeChevronStruts(width, height, isDoubleTaper, pointCut, pointCutLeft, pointCutRight, pointDir, isB2B, maxSpacing, manualCount, isManual, offsetSide, manualBottom, manualTop, stiffType);
         const bumpedCount = struts.bumpedCount || 0;
+        const fitMsg = fitProblem(struts, height);
+        if(fitMsg) problems.push({panelEl, msg: fitMsg});
         struts.sort((a,b)=>a.posFromBottom-b.posFromBottom);
         return {
           label, panelType, width, height, stiffType, maxSpacing, struts, cropDeg: chevronCropDeg,
@@ -1855,7 +2786,7 @@ function calculate(){
       // Calculate" button under the diagram flips it to Back (150mm/90mm) for whichever of the
       // two matching drawings this board actually belongs to.
       const label = isB2B ? `Chevron Panel ${panelTypeCounts} (B2B)` : `Chevron Panel ${panelTypeCounts}`;
-      panelResults.push(buildChevronResult(label, 'front'));
+      panelResults.push(buildChevronResult(label, isB2B ? keptSide(idx) : 'front'));
       return;
     }
 
@@ -1879,10 +2810,13 @@ function calculate(){
       manualCounts = distributeManualCount(normalToDistribute, sectionHeights);
     }
 
-    const offsetSide = 'front'; // B2B panels start on Front (90/150); the Offset Calculate button flips to Back
+    // B2B panels start on Front (90/150) and stay on whichever side Offset Calculate last put them on
+    const offsetSide = isB2B ? keptSide(idx) : 'front';
     let struts = computeAllSections(sectionHeights, maxSpacing, manualCounts, endLength, normalLength, isManual, isB2B, offsetSide, manualBottom, manualTop);
     const bumpedCount = struts.bumpedCount || 0;
 
+    const fitMsg = fitProblem(struts, height);
+    if(fitMsg) problems.push({panelEl, msg: fitMsg});
     struts.sort((a,b)=>a.posFromBottom-b.posFromBottom);
     attachLocalLabels(struts, sectionHeights, height, stiffType);
 
@@ -1920,7 +2854,12 @@ function calculate(){
     // from a previous import) skips calculation entirely rather than printing "NaNmm" &mdash;
     // fail honestly instead of showing a broken number that looks like real output.
     if(!(dtWidth > 0) || !(dtHeight > 0)){
-      skippedDtLabels.push(dtLabel);
+      // A row that is completely empty is just an unused row — only warn when it's half-filled in.
+      if(!(isNaN(dtWidth) && isNaN(dtHeight))) skippedDtLabels.push(dtLabel);
+      return;
+    }
+    if(dtWidth <= 100){
+      problems.push({panelEl: dtEl, msg: `${dtLabel}: the width must be more than 100mm (each strut is cut to width \u2212 100mm).`, dropTag:true});
       return;
     }
     const dtRadius = parseFloat(dtEl.querySelector('.dtRadius').value);
@@ -1949,18 +2888,45 @@ function calculate(){
         {type:'Normal', length:dtLength, posFromBottom: dtHeight-manualTop,
           centerLabel: `${round2(manualTop)}mm from top`, edgeLabel: `${round2(rulerMark(manualTop, dtStiffType, 'Normal'))}mm from top`}
       ];
-      dtBoards.push({label, dtWidth, dtHeight, dtRadius, dtLength, dtStruts:struts, stiffType:dtStiffType, isDtB2B, isManualDt:true});
+      dtBoards.push({label, rowLabel: dtLabel, dtWidth, dtHeight, dtRadius, dtLength, dtStruts:struts, stiffType:dtStiffType, isDtB2B, isManualDt:true});
     } else {
-      const inset = isDtB2B ? 50 : dropTagInsetFor(dtHeight);
-      dtBoards.push(buildBoard(label, inset));
+      // A B2B tag stays on the Front/Back side Offset Calculate last put it on
+      const prevBoard = prev && prev.dtBoards && prev.dtBoards.find(b => b.rowLabel === dtLabel);
+      const side = (isDtB2B && prevBoard && prevBoard.isDtB2B && !prevBoard.isManualDt && prevBoard.offsetSide === 'back') ? 'back' : 'front';
+      const inset = isDtB2B ? (side === 'back' ? 85 : 50) : dropTagInsetFor(dtHeight);
+      const board = buildBoard(label, inset);
+      board.offsetSide = side;
+      board.rowLabel = dtLabel;
+      dtBoards.push(board);
     }
   });
   const hasDroptag = dtBoards.length > 0;
 
-  renderResults({panels:panelResults, hasDroptag, dtBoards, skippedDtLabels});
+  // Sizes that don't fit together (a strut that would be 0mm long, offsets bigger than the section...)
+  // are caught here rather than printed as nonsense.
+  if(problems.length){
+    flow.problems = problems.map(p => ({
+      el: p.dropTag ? p.panelEl.querySelector('.dtWidth') : p.panelEl.querySelector('.mpHeight'),
+      msg: p.msg,
+      short: p.dropTag ? p.msg : `${p.panelEl.querySelector('.panel-instance-header h3').textContent}: ${p.msg}`,
+      panelEl: p.panelEl, panelMsg: true
+    }));
+    runChecks(silent);
+    return false;
+  }
+  flow.problems = [];
 
-  document.getElementById('fwbResults').classList.add('show');
-  document.getElementById('fwbResults').scrollIntoView({behavior:'smooth'});
+  const wasLive = flow.live;
+  flow.live = true;
+  flow.stale = false;
+  renderResults({panels:panelResults, hasDroptag, dtBoards, skippedDtLabels}, {flash: silent && wasLive});
+
+  const resultsEl = document.getElementById('fwbResults');
+  resultsEl.classList.add('show');
+  resultsEl.classList.remove('stale');
+  refreshStatus();
+  if(!silent) resultsEl.scrollIntoView({behavior: smoothBehavior(), block:'start'});
+  return true;
 }
 
 function joinerShort(stiffType){
@@ -2018,7 +2984,26 @@ function buildScheduleRows(d){
 
 let lastCalc = null;
 
-function renderResults(d){
+// Small caption under each diagram heading so the numbers can be matched to the job at a glance.
+function diagramMeta(p){
+  const bits = [`${p.width} \u00d7 ${p.height}mm`];
+  if(p.isChevron) bits.push('chevron');
+  else bits.push(p.numSections > 1 ? `${p.numSections} sections` : 'single sheet');
+  bits.push(`${p.stiffType}-stiffeners`);
+  if(p.maxSpacing) bits.push(`max spacing ${p.maxSpacing}mm`);
+  return bits.join(' \u00b7 ');
+}
+
+// The "Offset Calculate" flip button plus a plain statement of which side is showing right now.
+function offsetRowHTML(handlerCall, isBack, backText, frontText){
+  return `<div class="offset-row">
+      <button type="button" class="btn btn-sm" onclick="${handlerCall}">&#8646; Offset Calculate &mdash; switch to ${isBack ? 'Front' : 'Back'}</button>
+      <span class="pill">Now showing: ${isBack ? backText : frontText}</span>
+    </div>`;
+}
+
+function renderResults(d, opts){
+  opts = opts || {};
   lastCalc = d;
 
   // Summary chips &mdash; each panel counted separately, Drop Tag separately again, so
@@ -2030,6 +3015,7 @@ function renderResults(d){
     mainTotal += p.struts.length;
   });
   const dtTotal = d.hasDroptag ? d.dtBoards.reduce((sum,b)=>sum+b.dtStruts.length, 0) : 0;
+  flow.totals = {mainTotal, dtTotal, counts};
 
   let chipsHtml = `<div class="summary-chip"><div class="num">${mainTotal}</div><div class="lbl">All Panels &mdash; Struts</div></div>`;
   if(d.panels.length > 1){
@@ -2043,23 +3029,28 @@ function renderResults(d){
     <div class="summary-chip joiner"><div class="num">${counts.Joiner}</div><div class="lbl">Joiners</div></div>
     ${d.hasDroptag ? `<div class="summary-chip"><div class="num">${dtTotal}</div><div class="lbl">Drop Tag Struts</div></div>` : ''}
   `;
-  document.getElementById('summaryStrip').innerHTML = chipsHtml;
+  const strip = document.getElementById('summaryStrip');
+  strip.innerHTML = chipsHtml;
+  strip.classList.remove('flash');
+  if(opts.flash){ void strip.offsetWidth; strip.classList.add('flash'); }
   renderStpPasteCard(d);
 
-  // Info/warnings per panel: manual total bumped up to satisfy max spacing
-  let warnHtml = '';
+  // Notes and warnings, most serious first: collisions, then things to double-check by hand, then
+  // the green "checked, all fine" confirmations. Wording is unchanged from before.
+  const notes = {err:[], info:[], ok:[]};
+  const note = (kind, html) => notes[kind].push(`<div class="alert ${kind}">${html}</div>`);
   if(d.skippedDtLabels && d.skippedDtLabels.length){
-    warnHtml += `<div class="warn-box">${d.skippedDtLabels.join(', ')} ${d.skippedDtLabels.length>1?'have':'has'} no width/height entered yet, so ${d.skippedDtLabels.length>1?'they were':'it was'} left out of the calculation &mdash; fill it in or remove the row.</div>`;
+    note('info', `${d.skippedDtLabels.join(', ')} ${d.skippedDtLabels.length>1?'have':'has'} no width/height entered yet, so ${d.skippedDtLabels.length>1?'they were':'it was'} left out of the calculation &mdash; fill it in or remove the row.`);
   }
   d.panels.forEach(p=>{
     if(p.enteredTotal !== null && p.bumpedCount > 0){
-      warnHtml += `<div class="warn-box" style="background:rgba(95,209,146,.1); border-color:var(--good); color:var(--good);">${p.label}: you entered ${p.enteredTotal}, but that left gaps wider than the ${p.maxSpacing}mm maximum spacing &mdash; ${p.bumpedCount} extra strut${p.bumpedCount>1?'s were':' was'} added automatically (${p.struts.length} total) so no spacing exceeds the maximum.</div>`;
+      note('ok', `${p.label}: you entered ${p.enteredTotal}, but that left gaps wider than the ${p.maxSpacing}mm maximum spacing &mdash; ${p.bumpedCount} extra strut${p.bumpedCount>1?'s were':' was'} added automatically (${p.struts.length} total) so no spacing exceeds the maximum.`);
     }
     // Safety net: should never trigger now spacing is enforced, kept just in case
     for(let i=0;i<p.struts.length-1;i++){
       const gap = p.struts[i+1].posFromBottom - p.struts[i].posFromBottom;
       if(p.maxSpacing && gap > p.maxSpacing + 0.05){
-        warnHtml += `<div class="warn-box">${p.label}: spacing of ${round2(gap)}mm exceeds the ${p.maxSpacing}mm maximum.</div>`;
+        note('err', `${p.label}: spacing of ${round2(gap)}mm exceeds the ${p.maxSpacing}mm maximum.`);
       }
     }
     // B2B due diligence: Front and Back are the two mounting states of this same board spec,
@@ -2068,14 +3059,14 @@ function renderResults(d){
     if(p.isB2B){
       const need = STRUT_THICKNESS[p.stiffType] || STRUT_THICKNESS.A;
       if(p.isManualOffset){
-        warnHtml += `<div class="warn-box">${p.label}: manual offset is in use, so Front/Back clearance isn't auto-checked &mdash; confirm by hand that this board's struts won't hit its B2B partner's (need &ge; ${need}mm between any two strut centerlines for ${p.stiffType}-struts).</div>`;
+        note('info', `${p.label}: manual offset is in use, so Front/Back clearance isn't auto-checked &mdash; confirm by hand that this board's struts won't hit its B2B partner's (need &ge; ${need}mm between any two strut centerlines for ${p.stiffType}-struts).`);
       } else {
         const {front, back} = computeBothOffsetSides(p);
         const tightest = findTightestB2BPair(front, back);
         if(tightest && tightest.gap < need){
-          warnHtml += `<div class="warn-box">${p.label}: B2B COLLISION RISK &mdash; the Front board's ${tightest.front.type} strut (${round2(tightest.front.posFromBottom)}mm from the bottom) and the Back board's ${tightest.back.type} strut (${round2(tightest.back.posFromBottom)}mm from the bottom) would land only ${round2(tightest.gap)}mm apart &mdash; ${p.stiffType}-struts need at least ${need}mm clearance. Adjust the max spacing or strut count before cutting.</div>`;
+          note('err', `${p.label}: B2B COLLISION RISK &mdash; the Front board's ${tightest.front.type} strut (${round2(tightest.front.posFromBottom)}mm from the bottom) and the Back board's ${tightest.back.type} strut (${round2(tightest.back.posFromBottom)}mm from the bottom) would land only ${round2(tightest.gap)}mm apart &mdash; ${p.stiffType}-struts need at least ${need}mm clearance. Adjust the max spacing or strut count before cutting.`);
         } else if(tightest){
-          warnHtml += `<div class="warn-box" style="background:rgba(95,209,146,.1); border-color:var(--good); color:var(--good);">${p.label}: B2B clearance checked &mdash; closest Front/Back strut pair is ${round2(tightest.gap)}mm apart (need &ge; ${need}mm for ${p.stiffType}-struts). No collision expected.</div>`;
+          note('ok', `${p.label}: B2B clearance checked &mdash; closest Front/Back strut pair is ${round2(tightest.gap)}mm apart (need &ge; ${need}mm for ${p.stiffType}-struts). No collision expected.`);
         }
       }
     }
@@ -2084,30 +3075,29 @@ function renderResults(d){
     if(!board.isDtB2B) return;
     const need = STRUT_THICKNESS[board.stiffType] || STRUT_THICKNESS.A;
     if(board.isManualDt){
-      warnHtml += `<div class="warn-box">${board.label}: manual offset is in use, so Front/Back clearance isn't auto-checked &mdash; confirm by hand that this tag's struts won't hit its B2B partner's (need &ge; ${need}mm between any two strut centerlines for ${board.stiffType}-struts).</div>`;
+      note('info', `${board.label}: manual offset is in use, so Front/Back clearance isn't auto-checked &mdash; confirm by hand that this tag's struts won't hit its B2B partner's (need &ge; ${need}mm between any two strut centerlines for ${board.stiffType}-struts).`);
     } else {
       const front = [{type:'Normal', posFromBottom:50}, {type:'Normal', posFromBottom: board.dtHeight-50}];
       const back  = [{type:'Normal', posFromBottom:85}, {type:'Normal', posFromBottom: board.dtHeight-85}];
       const tightest = findTightestB2BPair(front, back);
       if(tightest.gap < need){
-        warnHtml += `<div class="warn-box">${board.label}: B2B COLLISION RISK &mdash; the Front strut (${round2(tightest.front.posFromBottom)}mm from the bottom) and the Back strut (${round2(tightest.back.posFromBottom)}mm from the bottom) would land only ${round2(tightest.gap)}mm apart &mdash; ${board.stiffType}-struts need at least ${need}mm clearance.</div>`;
+        note('err', `${board.label}: B2B COLLISION RISK &mdash; the Front strut (${round2(tightest.front.posFromBottom)}mm from the bottom) and the Back strut (${round2(tightest.back.posFromBottom)}mm from the bottom) would land only ${round2(tightest.gap)}mm apart &mdash; ${board.stiffType}-struts need at least ${need}mm clearance.`);
       } else {
-        warnHtml += `<div class="warn-box" style="background:rgba(95,209,146,.1); border-color:var(--good); color:var(--good);">${board.label}: B2B clearance checked &mdash; closest Front/Back strut pair is ${round2(tightest.gap)}mm apart (need &ge; ${need}mm for ${board.stiffType}-struts). No collision expected.</div>`;
+        note('ok', `${board.label}: B2B clearance checked &mdash; closest Front/Back strut pair is ${round2(tightest.gap)}mm apart (need &ge; ${need}mm for ${board.stiffType}-struts). No collision expected.`);
       }
     }
   });
-  document.getElementById('mainWarnings').innerHTML = warnHtml;
+  document.getElementById('mainWarnings').innerHTML = notes.err.concat(notes.info, notes.ok).join('');
 
   // Diagrams &mdash; one card per panel. B2B chevrons get their own independent Offset
   // Calculate button, so each panel's Front/Back offset can be picked separately.
   document.getElementById('panelDiagramsContainer').innerHTML = d.panels.map((p, idx) => `
-    <div class="card">
+    <div class="card diagram-card">
       <h2>${p.label} Diagram</h2>
-      ${(p.isB2B && !p.isManualOffset) ? `
-        <button class="reset-btn" style="margin-bottom:10px;" onclick="FWB.toggleOffsetSide(${idx})">
-          Offset Calculate &mdash; currently ${p.offsetSide === 'back' ? 'Back (150/90)' : 'Front (90/150)'}
-        </button>
-      ` : ''}
+      <div class="diag-meta">${diagramMeta(p)}</div>
+      ${(p.isB2B && !p.isManualOffset)
+        ? offsetRowHTML(`FWB.toggleOffsetSide(${idx})`, p.offsetSide === 'back', 'Back (150mm bottom / 90mm top)', 'Front (90mm bottom / 150mm top)')
+        : ''}
       <div class="diagram-scroll">${p.isChevron ? buildChevronSVG(p) : buildMainSVG(p)}</div>
     </div>
   `).join('');
@@ -2115,13 +3105,12 @@ function renderResults(d){
   // Diagrams &mdash; one card per drop tag board. B2B drop tags get their own independent
   // Offset Calculate button, so each tag's Front/Back inset can be picked separately.
   document.getElementById('dtDiagramsContainer').innerHTML = d.hasDroptag ? d.dtBoards.map((board, dtIdx) => `
-    <div class="card">
+    <div class="card diagram-card">
       <h2>${board.label} Diagram</h2>
-      ${(board.isDtB2B && !board.isManualDt) ? `
-        <button class="reset-btn" style="margin-bottom:10px;" onclick="FWB.toggleDtOffsetSide(${dtIdx})">
-          Offset Calculate &mdash; currently ${board.offsetSide === 'back' ? 'Back (85mm)' : 'Front (50mm)'}
-        </button>
-      ` : ''}
+      <div class="diag-meta">${board.dtWidth} \u00d7 ${board.dtHeight}mm \u00b7 ${board.stiffType}-stiffeners</div>
+      ${(board.isDtB2B && !board.isManualDt)
+        ? offsetRowHTML(`FWB.toggleDtOffsetSide(${dtIdx})`, board.offsetSide === 'back', 'Back (85mm from top/bottom)', 'Front (50mm from top/bottom)')
+        : ''}
       <div class="diagram-scroll">${buildDropTagSVG(board)}</div>
     </div>
   `).join('') : '';
@@ -2209,7 +3198,7 @@ function buildMainSVG(d, forPrint){
   const panelW = d.width*scale;
   const panelH = d.height*scaleY;
   const x0 = sectioned ? 470 : 300, y0 = 80;
-  const svgW = x0 + panelW + 300;
+  const svgW = x0 + panelW + (forPrint ? 300 : 340);
   const svgH = y0 + panelH + (sectioned ? 62 : 40);
   const panelRx = Math.min(26, panelH/8);
 
@@ -2308,7 +3297,7 @@ function buildChevronSVG(d, forPrint){
   const panelW = d.width*scale;
   const panelH = d.height*scale;
   const x0 = 300, y0 = 80;
-  const svgW = x0 + panelW + 300;
+  const svgW = x0 + panelW + (forPrint ? 300 : 340);
   const svgH = y0 + panelH + 40;
 
   let shoulderLeftPx = 0, shoulderRightPx = 0;
@@ -2404,7 +3393,7 @@ function buildDropTagSVG(d, forPrint){
   const w = d.dtWidth*scale;
   const h = d.dtHeight*scale;
   const x0=250, y0=60;
-  const svgW = x0 + w + 260;
+  const svgW = x0 + w + (forPrint ? 260 : 340);
   const svgH = y0 + h + 30;
 
   let lines='';
@@ -2443,6 +3432,10 @@ function blankFieldsIn(container){
 }
 
 function resetToDefaults(){
+  if(flow.timer){ clearTimeout(flow.timer); flow.timer = null; }
+  flow.live = false; flow.stale = false; flow.attempted = false; flow.edited = false; flow.scanDone = false;
+  flow.issues = []; flow.problems = []; flow.totals = null;
+  lastCalc = null;
   document.getElementById('panelsList').innerHTML = '';
   panelIds = [];
   panelCounter = 0;
@@ -2458,7 +3451,8 @@ function resetToDefaults(){
   const dtWrap = addDropTag(); // Drop Tag 1 — structure only, every box left blank
   blankFieldsIn(dtWrap);
 
-  document.getElementById('fwbResults').classList.remove('show');
+  document.getElementById('fwbResults').classList.remove('show', 'stale');
+  document.querySelectorAll('#checkSection .scanned').forEach(el=>el.classList.remove('scanned'));
 
   // Clear the uploaded drawing / import state too — was previously left behind on reset
   document.getElementById('drawingFileInput').value = '';
@@ -2478,6 +3472,8 @@ function resetToDefaults(){
   originalDrawingImageMediaType = null;
   currentRotationDegrees = 0;
   closeDrawingViewer();
+  flow.edited = false; // the rebuilt blank rows above don't count as the user's own edits
+  refreshStatus();
 }
 
 // Groups every strut (main panel + drop tag) by type+length+stiffType+tag into a
@@ -2573,6 +3569,7 @@ function copyStpPasteText(){
 
 async function printSchedule(){
   if(!lastCalc) return;
+  if(!flushRecalc()) return; // a box on the form is currently invalid — nothing trustworthy to print
   const d = lastCalc;
   const win = window.open('', '_blank'); // opened synchronously, before any await, to avoid popup blockers
   if(!win){ alert('Your browser blocked the print tab. Please allow pop-ups for this page and try again.'); return; }
@@ -3684,6 +4681,11 @@ function toggleImportDebug(){
 // Writes extracted values straight into the real form fields (creating Panel 1 / drop tag
 // instances as needed) so "review before calculating" just means checking the normal form.
 function applyExtractedData(extracted, methodLabel){
+  // New scan = new numbers to be checked: drop the old results so nothing stale can be printed.
+  if(flow.timer){ clearTimeout(flow.timer); flow.timer = null; }
+  flow.live = false; flow.stale = false; flow.problems = []; flow.totals = null;
+  lastCalc = null;
+  document.getElementById('fwbResults').classList.remove('show', 'stale');
   let panelEl = document.querySelector('#panelsList .panel-instance');
   if(!panelEl) panelEl = addPanel();
 
@@ -3775,13 +4777,389 @@ function applyExtractedData(extracted, methodLabel){
 
   extracted.warnings = warnings; // fold in any notes added above (e.g. chevron point-cut caveat)
   renderScanResult(extracted, methodLabel || 'scan');
+
+  // Outline what the scan filled in so it gets checked against the drawing before calculating
+  flagScanned(panelEl, isChevron);
+  updatePanelMeta(panelEl);
+  document.querySelectorAll('#dropTagsList .panel-instance').forEach(updatePanelMeta);
+  flow.scanDone = true; flow.attempted = true; flow.edited = true;
+  refreshStatus();
+
   if(document.getElementById('importThumb').src) openDrawingViewer();
 
-  panelEl.scrollIntoView({behavior:'smooth'});
+  panelEl.scrollIntoView({behavior: smoothBehavior(), block:'start'});
 }
+
+// ===================================================================
+// WORKFLOW LAYER
+// Keeps the form, the results and the "what's next" bar in step with each other: field messages,
+// live recalculation once a job has been calculated, the step tracker, scanned-value review cues,
+// and the confirm-before-you-lose-work prompts. None of this touches the strut maths.
+// ===================================================================
+
+function smoothBehavior(){
+  return (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth';
+}
+function plural(n, word){ return `${n} ${word}${n === 1 ? '' : 's'}`; }
+function numVal(el){ if(!el) return NaN; const v = parseFloat(el.value); return isFinite(v) ? v : NaN; }
+
+// Which box to point at when a section is over the 1200mm sheet limit.
+function overLimitElement(panelEl){
+  if(isChevronPanel(panelEl) || getNumSections(panelEl) === 1) return panelEl.querySelector('.mpHeight');
+  const n = getNumSections(panelEl);
+  const ui = getUIHeights(panelEl);
+  for(let k=1; k<n; k++){
+    if(ui[k] > 1200) return panelEl.querySelector(`.sectionEdit[data-ui-idx="${k}"]`);
+  }
+  return panelEl.querySelector('.numSections'); // the auto (top) section is the one that's too tall
+}
+
+// Everything that would stop a calculation (or make its result meaningless), found by looking at the
+// form only. Each issue: {el: the box to point at, msg: shown under it, short: shown in the status bar}.
+// soft:true issues get a message on the field but don't block anything.
+function collectIssues(){
+  const issues = [];
+  const add = (el, msg, short, extra) => { if(el) issues.push(Object.assign({el, msg, short: short || msg}, extra || {})); };
+
+  document.querySelectorAll('#panelsList .panel-instance').forEach((panelEl, i)=>{
+    const name = `Panel ${i+1}`;
+    const isChev = isChevronPanel(panelEl);
+    const wEl = panelEl.querySelector('.mpWidth'), hEl = panelEl.querySelector('.mpHeight');
+    if(!(numVal(wEl) > 0)) add(wEl, 'Enter the panel width.', `${name}: enter the width`);
+    if(!(numVal(hEl) > 0)) add(hEl, 'Enter the panel height.', `${name}: enter the height`);
+
+    if(isChev){
+      const both = panelEl.querySelector('.chevronTaper').value === 'both';
+      (both ? ['.pointCutLeft', '.pointCutRight'] : ['.pointCut']).forEach(sel=>{
+        const el = panelEl.querySelector(sel);
+        if(!(numVal(el) >= 0)) add(el, 'Enter the point cut (0 if there is none).', `${name}: enter the point cut`);
+      });
+    } else {
+      const crop = panelEl.querySelector('.cropDeg');
+      if(!(numVal(crop) >= 0)) add(crop, 'Enter the corner radius (0 if there is none).', `${name}: enter the corner radius`);
+      if(getNumSections(panelEl) > 1){
+        const edits = Array.from(panelEl.querySelectorAll('.sectionEdit'));
+        edits.forEach(el=>{ if(!(numVal(el) > 0)) add(el, "Enter this section's height.", `${name}: enter every section height`); });
+        if(edits.every(el=>numVal(el) > 0) && numVal(hEl) > 0 && !(getUIHeights(panelEl)[0] > 0)){
+          add(edits[0], 'The sections add up to more than the panel height.', `${name}: the sections add up to more than the panel height`);
+        }
+      }
+    }
+
+    // typed-in edge offsets
+    const cont = panelEl.querySelector(isChev ? '.chevronOnly' : '.rectOnly');
+    if(cont && (cont.dataset.offsetMode || 'auto') === 'manual'){
+      ['.manualOffsetBottom', '.manualOffsetTop'].forEach(sel=>{
+        const el = cont.querySelector(sel);
+        if(!(numVal(el) >= 0)) add(el, 'Enter the inset (0 if there is none).', `${name}: enter both edge offsets`);
+      });
+    }
+
+    const ms = panelEl.querySelector('.maxSpacing');
+    if(ms && ms.value !== '' && !(numVal(ms) > 0)) add(ms, 'Use a spacing above 0, or leave it blank for 350mm.', `${name}: max spacing`, {soft:true});
+
+    if(validateSectionHeights(panelEl)){
+      add(overLimitElement(panelEl), 'Over the 1200mm sheet limit — add a section or reduce the height.', `${name}: a cut is over the 1200mm sheet limit`);
+    }
+    if(panelEl.dataset.mode === 'manual' && validateManualTotal(panelEl)){
+      const minReq = minStiffenerTotal(panelEl);
+      add(panelEl.querySelector('.manualTotalCount'), `At least ${minReq} struts are needed in total.`, `${name}: the strut total must be at least ${minReq}`);
+    }
+  });
+
+  // A drop tag that's completely empty is an unused row; one that's half filled in gets a gentle nudge.
+  document.querySelectorAll('#dropTagsList .panel-instance').forEach((dtEl, i)=>{
+    const wEl = dtEl.querySelector('.dtWidth'), hEl = dtEl.querySelector('.dtHeight');
+    const w = numVal(wEl), h = numVal(hEl);
+    if(isNaN(w) && isNaN(h)) return;
+    if(!(w > 0)) add(wEl, 'Enter the width, or remove this drop tag.', `Drop Tag ${i+1}: enter the width`, {soft:true});
+    if(!(h > 0)) add(hEl, 'Enter the height, or remove this drop tag.', `Drop Tag ${i+1}: enter the height`, {soft:true});
+  });
+
+  // "These sizes don't fit together" results found by the last calculation attempt
+  flow.problems.forEach(p=>{ if(p.el && p.el.isConnected) issues.push(p); });
+  return issues;
+}
+
+// Shows the issues on the form. Messages appear once a field has been visited or a calculation attempted,
+// so a box you're about to type into isn't shouted at.
+function paintIssues(issues){
+  const root = document.getElementById('checkSection');
+  root.querySelectorAll('.invalid').forEach(el=>{ el.classList.remove('invalid'); el.removeAttribute('aria-invalid'); });
+  root.querySelectorAll('.field-msg[data-auto]').forEach(n=>n.remove());
+  root.querySelectorAll('.panel-issues').forEach(n=>{ n.innerHTML = ''; });
+  issues.forEach(it=>{
+    if(it.panelMsg && it.panelEl){
+      const slot = it.panelEl.querySelector('.panel-issues');
+      if(slot) slot.innerHTML = `<div class="alert err" role="alert">${it.msg}</div>`;
+      return;
+    }
+    if(!it.el || !(flow.attempted || it.el.dataset.touched)) return;
+    it.el.classList.add('invalid');
+    it.el.setAttribute('aria-invalid', 'true');
+    const host = it.el.closest('.field') || it.el.parentNode;
+    if(host && !host.querySelector('.field-msg[data-auto]')){
+      const m = document.createElement('span');
+      m.className = 'field-msg';
+      m.style.display = 'block';
+      m.dataset.auto = '1';
+      m.textContent = it.msg;
+      host.appendChild(m);
+    }
+  });
+}
+
+// One place that brings every status display up to date: the bar, the step tracker, the calculate
+// button, the "out of date" banner, the print buttons and the scan-review banner.
+function refreshStatus(){
+  if(!flow.ready) return;
+  const issues = collectIssues();
+  flow.issues = issues;
+  paintIssues(issues);
+  const blocking = issues.filter(i=>!i.soft);
+  const stale = flow.live && blocking.length > 0;
+  flow.stale = stale;
+  const scannedLeft = document.querySelectorAll('#checkSection .scanned').length;
+
+  // results area
+  document.getElementById('fwbResults').classList.toggle('stale', stale);
+  const banner = document.getElementById('staleBanner');
+  if(stale){
+    banner.hidden = false;
+    banner.innerHTML = `<span><b>These results are out of date.</b> ${blocking[0].short}. Fix it and they refresh by themselves &mdash; printing is switched off until then.</span>`;
+  } else {
+    banner.hidden = true;
+    banner.innerHTML = '';
+  }
+  ['printBtn', 'copyStpBtn'].forEach(id=>{
+    const b = document.getElementById(id);
+    if(b){ b.disabled = stale; b.setAttribute('aria-disabled', stale ? 'true' : 'false'); }
+  });
+
+  // sticky bar
+  const msg = document.getElementById('fwbBarMsg'), txt = document.getElementById('fwbBarTxt'), btn = document.getElementById('fwbBarBtn');
+  let kind, html, label;
+  if(blocking.length){
+    kind = (flow.attempted || flow.live) ? 'bad' : 'todo';
+    const head = flow.live ? `Results paused &mdash; ${plural(blocking.length, 'thing')} to fix`
+                           : (flow.attempted ? `${plural(blocking.length, 'thing')} to fix first` : 'Fill in the details');
+    html = `${head}<span class="sub">${blocking[0].short}</span>`;
+    label = 'Show me';
+  } else if(flow.live && flow.totals){
+    const t = flow.totals;
+    kind = 'ok';
+    html = `<b>${t.mainTotal}</b> struts &middot; ${t.counts.End} End &middot; ${t.counts.Normal} Normal &middot; ${t.counts.Joiner} Joiner${t.dtTotal ? ` &middot; +${t.dtTotal} drop tag` : ''}<span class="sub">${scannedLeft ? plural(scannedLeft, 'scanned value') + ' not checked yet' : 'Up to date &mdash; refreshes as you type'}</span>`;
+    label = 'Go to print ↓';
+  } else {
+    kind = 'todo';
+    html = `Ready to calculate<span class="sub">${scannedLeft ? plural(scannedLeft, 'scanned value') + ' still to check first' : 'Check the sizes above, then calculate'}</span>`;
+    label = 'Calculate struts';
+  }
+  msg.className = 'bar-msg ' + kind;
+  txt.innerHTML = html;
+  btn.textContent = label;
+
+  // in-flow calculate button
+  const calcBtn = document.getElementById('calcBtn'), note = document.getElementById('liveNote');
+  if(flow.live && !blocking.length){
+    calcBtn.textContent = 'View results ↓';
+    note.textContent = '✓ Results are live — they update as you type.';
+    note.classList.add('on');
+  } else {
+    calcBtn.textContent = 'Calculate struts';
+    note.textContent = flow.live ? 'Fix the highlighted box and the results refresh by themselves.' : 'Press Enter in any box, or this button, to calculate.';
+    note.classList.remove('on');
+  }
+
+  // step tracker
+  const cur = flow.live ? 'results' : ((flow.scanDone || flow.edited) ? 'check' : 'scan');
+  document.querySelectorAll('#fwbStepper .fstep').forEach(b=>{
+    const s = b.dataset.step;
+    const locked = (s === 'results' || s === 'print') && !flow.live;
+    b.classList.toggle('current', s === cur);
+    b.classList.toggle('done', (s === 'scan' && flow.scanDone && cur !== 'scan') || (s === 'check' && cur === 'results'));
+    b.classList.toggle('locked', locked);
+    b.setAttribute('aria-disabled', locked ? 'true' : 'false');
+    if(s === cur) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+  });
+
+  // "check the scanned values" banner
+  const rev = document.getElementById('scanReview');
+  if(flow.scanDone){
+    const done = scannedLeft === 0;
+    rev.hidden = false;
+    rev.classList.toggle('all-clear', done);
+    document.getElementById('scanReviewMsg').innerHTML = done
+      ? "<b>All scanned values checked.</b> Calculate when you're happy with them."
+      : `<b>${plural(scannedLeft, 'scanned value')} still to check.</b> Boxes outlined in amber were filled in by the scan &mdash; compare each with the drawing and change it if it's wrong.`;
+    document.getElementById('scanReviewBtn').style.display = done ? 'none' : '';
+  } else {
+    rev.hidden = true;
+  }
+}
+
+// Once a job has been calculated, every edit refreshes the results by itself (after a short pause so
+// typing "4620" doesn't calculate four times).
+function scheduleRecalc(){
+  if(!flow.live) return;
+  clearTimeout(flow.timer);
+  flow.timer = setTimeout(()=>{ flow.timer = null; calculate({silent:true}); }, 220);
+}
+// Called right before anything leaves the app (print / send on) so it can never pick up numbers that
+// are a keystroke behind. Returns false if the form currently can't produce a valid result.
+function flushRecalc(){
+  if(flow.timer){ clearTimeout(flow.timer); flow.timer = null; return calculate({silent:true}); }
+  return !flow.stale;
+}
+
+function afterStructureChange(){
+  if(!flow.ready) return;
+  flow.edited = true;
+  flow.problems = [];
+  refreshStatus();
+  scheduleRecalc();
+}
+
+function onFormChange(e){
+  const t = e.target;
+  if(t && t.classList && (e.type === 'input' || e.type === 'change')) t.classList.remove('scanned'); // edited = reviewed
+  flow.edited = true;
+  flow.problems = [];
+  const owner = t && t.closest ? t.closest('.panel-instance') : null;
+  if(owner) updatePanelMeta(owner);
+  refreshStatus();
+  scheduleRecalc();
+}
+
+function goToStep(step){
+  const targets = {scan:'importCard', check:'checkSection', results:'fwbResults', print:'printStepCard'};
+  if((step === 'results' || step === 'print') && !flow.live) return;
+  const el = document.getElementById(targets[step]);
+  if(el) el.scrollIntoView({behavior: smoothBehavior(), block:'start'});
+}
+
+// The big button in the sticky bar always does "the next sensible thing".
+function barAction(){
+  const blocking = (flow.issues || []).filter(i=>!i.soft);
+  if(blocking.length){
+    flow.attempted = true;
+    refreshStatus();
+    const t = blocking[0].el;
+    if(t){
+      t.scrollIntoView({behavior: smoothBehavior(), block:'center'});
+      try{ t.focus({preventScroll:true}); }catch(e){}
+    }
+    return;
+  }
+  if(flow.live){ goToStep('print'); return; }
+  calculate();
+}
+
+function markAllChecked(){
+  document.querySelectorAll('#checkSection .scanned').forEach(el=>el.classList.remove('scanned'));
+  refreshStatus();
+}
+
+// Outline everything the scan filled in (or fell back to a default for) until it has been looked at.
+function flagScanned(panelEl, isChevron){
+  const sels = ['.mpWidth', '.mpHeight', '.stiffType', '.maxSpacing'];
+  if(isChevron){
+    const both = panelEl.querySelector('.chevronTaper').value === 'both';
+    sels.push('.chevronTaper', '.pointDir', '.chevronCropDeg', ...(both ? ['.pointCutLeft', '.pointCutRight'] : ['.pointCut']));
+  } else {
+    sels.push('.numSections', '.sectionEdit', '.cropDeg');
+  }
+  sels.forEach(s=>panelEl.querySelectorAll(s).forEach(el=>el.classList.add('scanned')));
+  document.querySelectorAll('#dropTagsList .dtWidth, #dropTagsList .dtHeight, #dropTagsList .dtRadius').forEach(el=>el.classList.add('scanned'));
+}
+
+// In-page confirm box (same look as the import prompts). Resolves true on confirm, false on cancel / Esc / click-away.
+function confirmDialog(o){
+  return new Promise(resolve=>{
+    const prevFocus = document.activeElement;
+    const ov = document.createElement('div');
+    ov.className = 'importModalOverlay no-print';
+    ov.setAttribute('role', 'dialog');
+    ov.setAttribute('aria-modal', 'true');
+    ov.setAttribute('aria-labelledby', 'fwbConfirmTitle');
+    ov.innerHTML = `<div class="importModalCard">
+        <h3 id="fwbConfirmTitle">${o.title}</h3>
+        <p>${o.text}</p>
+        <div class="importModalActions">
+          <button type="button" class="importModalSkip" data-act="cancel">${o.cancelLabel || 'Cancel'}</button>
+          <button type="button" class="importModalConfirm" data-act="ok">${o.okLabel || 'OK'}</button>
+        </div>
+      </div>`;
+    document.body.appendChild(ov);
+    const done = (val)=>{
+      document.removeEventListener('keydown', onKey, true);
+      ov.remove();
+      try{ if(prevFocus && prevFocus.focus) prevFocus.focus({preventScroll:true}); }catch(e){}
+      resolve(val);
+    };
+    const onKey = (e)=>{
+      if(e.key === 'Escape'){ e.preventDefault(); done(false); }
+      else if(e.key === 'Tab'){ // keep focus inside the box
+        const btns = ov.querySelectorAll('button');
+        const first = btns[0], last = btns[btns.length-1];
+        if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+        else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+      }
+    };
+    document.addEventListener('keydown', onKey, true);
+    ov.addEventListener('click', (e)=>{
+      if(e.target === ov) done(false);
+      const act = e.target.closest && e.target.closest('[data-act]');
+      if(act) done(act.dataset.act === 'ok');
+    });
+    ov.querySelector('[data-act="cancel"]').focus(); // the safe choice has focus
+  });
+}
+
+// "Start over" button: wipes the tab, so ask first unless there's nothing to lose.
+function confirmReset(){
+  const hasWork = flow.edited || flow.scanDone || flow.live || !!selectedDrawingFile;
+  const go = ()=>{ resetToDefaults(); window.scrollTo({top:0, behavior:'auto'}); };
+  if(!hasWork){ go(); return; }
+  confirmDialog({
+    title: 'Start over?',
+    text: "This clears every panel, drop tag and the scanned drawing on this tab so you can begin a new board. Anything already sent to the Strut or Aluminium calculators stays there.",
+    okLabel: 'Clear everything', cancelLabel: 'Keep working'
+  }).then(ok=>{ if(ok) go(); });
+}
+
+(function wireWorkflow(){
+  const root = document.getElementById('checkSection');
+  root.addEventListener('input', onFormChange);
+  root.addEventListener('change', onFormChange);
+  root.addEventListener('click', e=>{ if(e.target.closest && e.target.closest('.toggle-btn')) onFormChange(e); });
+  // visiting a box counts as having looked at it: show its message if it's wrong, drop the "scanned" outline
+  root.addEventListener('focusout', e=>{
+    const t = e.target;
+    if(t && t.matches && t.matches('input, select')){
+      t.dataset.touched = '1';
+      t.classList.remove('scanned');
+      refreshStatus();
+    }
+  });
+  root.addEventListener('keydown', e=>{
+    if(e.key === 'Enter' && e.target.matches && e.target.matches('input[type=number]')){
+      e.preventDefault();
+      if(!flow.live) calculate(); else e.target.blur();
+    }
+  });
+  // Scrolling the page with the mouse wheel while a number box has focus silently changes its value in
+  // some browsers — on a measurement form that's dangerous, so the box lets go of focus instead.
+  document.getElementById('fwbPanel').addEventListener('wheel', e=>{
+    const t = e.target;
+    if(t && t.matches && t.matches('input[type=number]') && document.activeElement === t) t.blur();
+  }, {passive:true});
+})();
 
 addPanel();
 addDropTag();
+flow.ready = true;
+refreshStatus();
 
 // Builds the Aluminium Calculator's order-row list for one scanned board.
 // Every physical panel is one sheet of aluminium (max 1200mm high) — panels
@@ -3826,9 +5204,10 @@ window.FWB = {
   toggleDtOffsetSide, toggleImportDebug, toggleOffsetSide, handleDragLeave,
   handleDragOver, handleFileDrop, onDrawingFileSelected, onPointDirectionChange,
   toggleChevronTaperFields, togglePanelTypeFields, setAfterPrintHandler,
-  getStpPasteText: function(){ return lastCalc ? buildStpPasteText(lastCalc) : ''; },
+  confirmReset, goToStep, barAction, markAllChecked,
+  getStpPasteText: function(){ flushRecalc(); return lastCalc ? buildStpPasteText(lastCalc) : ''; },
   hasCalculatedStruts: function(){ return !!lastCalc; },
-  getAlItems: function(boardNum){ return lastCalc ? buildAlItems(lastCalc, boardNum) : []; }
+  getAlItems: function(boardNum){ flushRecalc(); return lastCalc ? buildAlItems(lastCalc, boardNum) : []; }
 };
 
 })();
@@ -3867,9 +5246,10 @@ window.FWB = {
   </div>
 </div>
 
-<header class="no-print">
+<header class="plate no-print">
+  <div class="rivet r1"></div><div class="rivet r2"></div><div class="rivet r3"></div><div class="rivet r4"></div>
   <div>
-    <h1>Yungatha Strut Calculator</h1>
+    <h1>YUNGATHA <span>Strut</span> Calculator</h1>
     <div class="tag">A / B / Joiner Strut bundle &amp; cut planning</div>
   </div>
   <div class="settings-bar">
@@ -3971,7 +5351,7 @@ Bstruts Joiner
   <div id="results" style="display:none;">
 
     <div class="calc-bar no-print" style="margin:0 0 20px;">
-      <button class="calc-btn" style="background:var(--charcoal);box-shadow:0 4px 0 #000;" onclick="STP.openPrintInfoModal()">🖨️ Export / Print Workshop Sheet</button>
+      <button class="calc-btn secondary" onclick="STP.openPrintInfoModal()">🖨️ Export / Print Workshop Sheet</button>
     </div>
 
     <div class="summary no-print" id="summaryStats"></div>
@@ -5091,9 +6471,10 @@ window.STP = {
   </div>
 </div>
 
-<header class="no-print">
+<header class="plate no-print">
+  <div class="rivet r1"></div><div class="rivet r2"></div><div class="rivet r3"></div><div class="rivet r4"></div>
   <div>
-    <h1>Yungatha Aluminium Gaming</h1>
+    <h1>YUNGATHA <span>Aluminium</span> Gaming</h1>
     <div class="tag">Aluminium sheet nesting, Joiners &amp; Connecting Panels</div>
   </div>
   <div class="settings-bar">
@@ -5143,7 +6524,7 @@ window.STP = {
   <div id="alResults" style="display:none;">
 
     <div class="calc-bar no-print" style="margin:0 0 20px;">
-      <button class="calc-btn" style="background:var(--charcoal);box-shadow:0 4px 0 #000;" onclick="AL.openPrintInfoModal()">🖨️ Export / Print Workshop Sheet</button>
+      <button class="calc-btn secondary" onclick="AL.openPrintInfoModal()">🖨️ Export / Print Workshop Sheet</button>
     </div>
 
     <div class="section-title">Sheets Required For This Job</div>
