@@ -622,6 +622,9 @@ body.viewerOpen .fwb-app .panel-grid{grid-template-columns:1fr;}
 .fwb-app .calc-row .live-note.on{color:var(--good);}
 .fwb-app .fwb-bar{position:sticky; bottom:0; z-index:40; background:rgba(20,24,27,.95); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); border-top:1px solid var(--line-strong); box-shadow:0 -8px 24px rgba(0,0,0,.35);}
 .fwb-app .fwb-bar-inner{max-width:1120px; margin:0 auto; padding:11px 24px; display:flex; align-items:center; justify-content:space-between; gap:16px;}
+.fwb-app .bar-actions{display:flex; align-items:center; gap:10px; flex:none;}
+.fwb-app #fwbBarCalc[hidden]{display:none;}
+.importModalToast{width:max-content; max-width:min(560px, calc(100vw - 32px)); text-align:center; line-height:1.45; bottom:92px;} /* sits above the sticky bar */
 .fwb-app .bar-msg{min-width:0; font-size:.88rem; color:var(--text); display:flex; align-items:center; gap:10px;}
 .fwb-app .bar-msg .dot{flex:none; width:10px; height:10px; border-radius:50%; background:var(--text-dim);}
 .fwb-app .bar-msg.ok .dot{background:var(--good); box-shadow:0 0 0 4px rgba(95,209,146,.2);}
@@ -663,6 +666,9 @@ body.viewerOpen .fwb-app .wrap{max-width:none;}
   .fwb-app .bar-msg{font-size:.8rem;}
   .fwb-app .sec-wrap{grid-template-columns:1fr 64px;}
   .fwb-app .calc-row .btn-lg{flex:1 1 100%;}
+}
+@media (max-width:560px){
+  .fwb-app #fwbBarCalc{display:none;}
 }
 @media (max-width:420px){
   .fwb-app .field-row{gap:10px;}
@@ -1578,6 +1584,7 @@ body.viewerOpen .fwb-app .wrap{max-width:none;}
 
 }
 
+.al-app .al-opt-note{margin:-10px 0 22px; padding:10px 14px; border:1px solid rgba(95,209,146,.45); background:var(--good-soft); color:var(--good); border-radius:10px; font-size:.9rem; font-weight:600; line-height:1.45;}
 }
 </style>
 </head>
@@ -1666,11 +1673,11 @@ body.viewerOpen .fwb-app .wrap{max-width:none;}
       <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
     </div>
     <h3>Import Into Strut Calculator?</h3>
-    <p>Add this board's struts to your Strut Calculator cut list, then reset the Freeway Board tab for the next scan.</p>
+    <p id="importModalText">Add this board's struts to your Strut Calculator cut list, then reset the Freeway Board tab for the next scan.</p>
     <div class="importSummary" id="importModalSummary"></div>
     <div class="importModalActions">
       <button type="button" class="importModalSkip" onclick="Shell.skipImport()">Not Now</button>
-      <button type="button" class="importModalConfirm" onclick="Shell.confirmImport()">Yes, Import &amp; Reset</button>
+      <button type="button" class="importModalConfirm" id="importModalYes" onclick="Shell.confirmImport()">Yes, Import &amp; Reset</button>
     </div>
   </div>
 </div>
@@ -1681,11 +1688,11 @@ body.viewerOpen .fwb-app .wrap{max-width:none;}
       <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
     </div>
     <h3>Import Into Aluminium Calculator?</h3>
-    <p>Add this board's metal sizes to your Aluminium Calculator cut list, then reset the Freeway Board tab for the next scan.</p>
+    <p id="alImportModalText">Add this board's metal sizes to your Aluminium Calculator cut list, then reset the Freeway Board tab for the next scan.</p>
     <div class="importSummary" id="alImportModalSummary"></div>
     <div class="importModalActions">
       <button type="button" class="importModalSkip" onclick="Shell.skipAlImport()">Not Now</button>
-      <button type="button" class="importModalConfirm" onclick="Shell.confirmAlImport()">Yes, Import &amp; Reset</button>
+      <button type="button" class="importModalConfirm" id="alImportModalYes" onclick="Shell.confirmAlImport()">Yes, Import &amp; Reset</button>
     </div>
   </div>
 </div>
@@ -1880,7 +1887,10 @@ body.viewerOpen .fwb-app .wrap{max-width:none;}
 <div class="fwb-bar" id="fwbBar" role="region" aria-label="Status and next step">
   <div class="fwb-bar-inner">
     <div class="bar-msg todo" id="fwbBarMsg" role="status" aria-live="polite"><span class="dot" aria-hidden="true"></span><span class="txt" id="fwbBarTxt"></span></div>
-    <button type="button" class="btn btn-primary" id="fwbBarBtn" onclick="FWB.barAction()">Calculate struts</button>
+    <div class="bar-actions">
+      <button type="button" class="btn" id="fwbBarCalc" onclick="FWB.calculate()" hidden>Calculate</button>
+      <button type="button" class="btn btn-primary" id="fwbBarBtn" onclick="FWB.barAction()">Calculate struts</button>
+    </div>
   </div>
 </div>
 
@@ -4958,12 +4968,17 @@ function refreshStatus(){
   msg.className = 'bar-msg ' + kind;
   txt.innerHTML = html;
   btn.textContent = label;
+  document.getElementById('fwbBarCalc').hidden = !(flow.live && !blocking.length);
+  const fn = document.getElementById('finishNote');
+  if(fn) fn.textContent = isB2BJob()
+    ? "Printing also offers to send this board's struts and sheet sizes to the Strut and Aluminium calculators. This is a Back-to-Back job, so every value stays in place afterwards: switch the board to Back in the diagram and print again. Use Start over when you're finished."
+    : "Printing also offers to send this board's struts and sheet sizes to the Strut and Aluminium calculators, then clears this tab ready for the next drawing. Prefer not to print? Use the second button.";
 
   // in-flow calculate button
   const calcBtn = document.getElementById('calcBtn'), note = document.getElementById('liveNote');
   if(flow.live && !blocking.length){
-    calcBtn.textContent = 'View results ↓';
-    note.textContent = '✓ Results are live — they update as you type.';
+    calcBtn.textContent = 'Calculate struts'; // always here, so a changed value can be recalculated with one press
+    note.textContent = '✓ Results are live — they refresh as you type. Press Calculate to recalculate and jump to them.';
     note.classList.add('on');
   } else {
     calcBtn.textContent = 'Calculate struts';
@@ -5117,6 +5132,28 @@ function confirmDialog(o){
 }
 
 // "Start over" button: wipes the tab, so ask first unless there's nothing to lose.
+// A job is "Back-to-Back" when any panel (main/sub or chevron) or drop tag has the B2B box ticked.
+function isB2BJob(){
+  const panels = Array.from(document.querySelectorAll('#panelsList .panel-instance')).some(el=>{
+    const box = isChevronPanel(el) ? el.querySelector('.isB2B') : el.querySelector('.isB2BRect');
+    return !!(box && box.checked);
+  });
+  const tags = Array.from(document.querySelectorAll('#dropTagsList .isDtB2B')).some(c=>c.checked);
+  return panels || tags;
+}
+
+// Called when the Strut / Aluminium pop-ups are both answered. A normal job clears the tab for the next
+// drawing. A Back-to-Back job is printed twice (Front, then Back) with the very same sizes, so it keeps
+// every value and the results, and takes the person to the diagrams where the Front/Back button is.
+function finishAfterImport(){
+  if(isB2BJob() && flow.live){
+    goToStep('results');
+    return {kept:true};
+  }
+  resetToDefaults();
+  return {kept:false};
+}
+
 function confirmReset(){
   const hasWork = flow.edited || flow.scanDone || flow.live || !!selectedDrawingFile;
   const go = ()=>{ resetToDefaults(); window.scrollTo({top:0, behavior:'auto'}); };
@@ -5204,7 +5241,7 @@ window.FWB = {
   toggleDtOffsetSide, toggleImportDebug, toggleOffsetSide, handleDragLeave,
   handleDragOver, handleFileDrop, onDrawingFileSelected, onPointDirectionChange,
   toggleChevronTaperFields, togglePanelTypeFields, setAfterPrintHandler,
-  confirmReset, goToStep, barAction, markAllChecked,
+  confirmReset, goToStep, barAction, markAllChecked, isB2BJob, finishAfterImport,
   getStpPasteText: function(){ flushRecalc(); return lastCalc ? buildStpPasteText(lastCalc) : ''; },
   hasCalculatedStruts: function(){ return !!lastCalc; },
   getAlItems: function(boardNum){ flushRecalc(); return lastCalc ? buildAlItems(lastCalc, boardNum) : []; }
@@ -6535,6 +6572,8 @@ window.STP = {
       </table>
     </div>
 
+    <div class="al-opt-note no-print" id="alOptNote" style="display:none;"></div>
+
     <div class="summary no-print" id="alSummaryStats"></div>
 
     <div id="alBlockedSection" style="display:none;">
@@ -6869,41 +6908,85 @@ function resetAll(){
 resetAll();
 
 // ---------------------- CORE ALGORITHM (unified pool, sequential guillotine cuts) ----------------------
+//
+// Every piece is cut from a free rectangle (a whole sheet, an offcut on hand, or a leftover from an earlier
+// cut) with straight edge-to-edge cuts only, exactly as before. What changed is HOW the plan is found:
+// a single quick pass can paint itself into a corner (one early "snug" placement can break up the strip a
+// later piece needed), so runCalculation() now tries many orderings and placement rules and keeps the plan
+// that uses the fewest sheets. The original single pass is always one of the candidates, so the result is
+// never worse than the old one.
+//
+// opts (all optional - with none given, the behaviour is exactly the original single pass):
+//   fit:   'waste' | 'bssf' | 'blsf' | 'first'  which free rectangle a piece goes into
+//   split: 'V' | 'H' | 'MAXA' | 'MINA' | 'SAS' | 'LAS'  how the leftover is divided up (always edge to edge)
+//   sheet: 'yield' | 'area'                      which stock size to open next
 
-function tryFulfillFromOffcuts(pool, piece){
+function tryFulfillFromOffcuts(pool, piece, opts){
+  const fit = (opts && opts.fit) || 'waste';
   let best=null;
-  for(const off of pool){
+  for(let oi=0; oi<pool.length; oi++){
+    const off = pool[oi];
     if(off.usedUp) continue;
     if(off.thickness !== piece.thickness) continue;
     const orients=[{w:piece.w,h:piece.h,rot:false}];
     if(piece.allowRotate) orients.push({w:piece.h,h:piece.w,rot:true});
-    // Waste from a single cut is identical no matter which way the piece is
-    // turned (rotating doesn't change its area). So for THIS offcut, don't
-    // just take the first orientation that fits — pick whichever orientation
-    // packs the most copies of this piece into the offcut overall, so the
-    // leftover keeps chaining into more usable pieces instead of slivers.
-    let bestForThisOffcut = null;
-    for(const o of orients){
-      if(off.w >= o.w-0.001 && off.h >= o.h-0.001){
-        const selfYield = Math.floor(off.w/o.w) * Math.floor(off.h/o.h);
-        if(!bestForThisOffcut || selfYield > bestForThisOffcut.selfYield) bestForThisOffcut = {o, selfYield};
+    if(fit === 'waste'){
+      // Waste from a single cut is identical no matter which way the piece is
+      // turned (rotating doesn't change its area). So for THIS offcut, don't
+      // just take the first orientation that fits — pick whichever orientation
+      // packs the most copies of this piece into the offcut overall, so the
+      // leftover keeps chaining into more usable pieces instead of slivers.
+      let bestForThisOffcut = null;
+      for(const o of orients){
+        if(off.w >= o.w-0.001 && off.h >= o.h-0.001){
+          const selfYield = Math.floor(off.w/o.w) * Math.floor(off.h/o.h);
+          if(!bestForThisOffcut || selfYield > bestForThisOffcut.selfYield) bestForThisOffcut = {o, selfYield};
+        }
       }
-    }
-    if(bestForThisOffcut){
-      const o = bestForThisOffcut.o;
-      const wasteArea = off.w*off.h - o.w*o.h;
-      if(!best || wasteArea<best.wasteArea) best={offcut:off, orient:o, wasteArea};
+      if(bestForThisOffcut){
+        const o = bestForThisOffcut.o;
+        const wasteArea = off.w*off.h - o.w*o.h;
+        if(!best || wasteArea<best.wasteArea) best={offcut:off, orient:o, wasteArea};
+      }
+    } else {
+      for(const o of orients){
+        if(off.w >= o.w-0.001 && off.h >= o.h-0.001){
+          const lw = off.w-o.w, lh = off.h-o.h;
+          let k1, k2;
+          if(fit === 'bssf'){ k1 = Math.min(lw,lh); k2 = Math.max(lw,lh); }        // tightest fit on the short side
+          else if(fit === 'blsf'){ k1 = Math.max(lw,lh); k2 = Math.min(lw,lh); }   // tightest fit on the long side
+          else { k1 = oi; k2 = Math.min(lw,lh); }                                  // 'first': oldest free rectangle
+          if(!best || k1<best.k1-1e-9 || (Math.abs(k1-best.k1)<=1e-9 && k2<best.k2-1e-9)){
+            best = {offcut:off, orient:o, wasteArea:off.w*off.h-o.w*o.h, k1, k2};
+          }
+        }
+      }
     }
   }
   return best;
 }
-function splitLeftover(off, usedW, usedH){
-  const out=[];
-  const rightW = off.w-usedW, rightH = off.h;
-  const topW = usedW, topH = off.h-usedH;
-  if(rightW > 10 && rightH > 10) out.push({w:rightW,h:rightH, ax:off.ax+usedW, ay:off.ay, rootId:off.rootId, rootLabel:off.rootLabel, rootW:off.rootW, rootH:off.rootH, thickness:off.thickness});
-  if(topW > 10 && topH > 10) out.push({w:topW,h:topH, ax:off.ax, ay:off.ay+usedH, rootId:off.rootId, rootLabel:off.rootLabel, rootW:off.rootW, rootH:off.rootH, thickness:off.thickness});
-  return out;
+function splitLeftover(off, usedW, usedH, rule){
+  const lw = off.w-usedW, lh = off.h-usedH;
+  const mk = (w,h,ax,ay)=>({w, h, ax, ay, rootId:off.rootId, rootLabel:off.rootLabel, rootW:off.rootW, rootH:off.rootH, thickness:off.thickness});
+  // vertical cut first (the original rule): full-height strip on the right, strip above the piece on the left
+  const V = ()=>[ mk(lw, off.h, off.ax+usedW, off.ay), mk(usedW, lh, off.ax, off.ay+usedH) ];
+  // horizontal cut first: full-width strip above, strip beside the piece
+  const H = ()=>[ mk(lw, usedH, off.ax+usedW, off.ay), mk(off.w, lh, off.ax, off.ay+usedH) ];
+  let parts;
+  switch(rule){
+    case 'H': parts = H(); break;
+    case 'SAS': parts = (lw <= lh) ? H() : V(); break;
+    case 'LAS': parts = (lw <= lh) ? V() : H(); break;
+    case 'MAXA':
+    case 'MINA': {
+      const a = V(), b = H();
+      const big = p=>Math.max(...p.filter(q=>q.w>10&&q.h>10).map(q=>q.w*q.h), 0);
+      const pickB = rule==='MAXA' ? big(b) > big(a)+1e-6 : big(b) < big(a)-1e-6;
+      parts = pickB ? b : a; break;
+    }
+    default: parts = V();
+  }
+  return parts.filter(p=> p.w > 10 && p.h > 10);
 }
 function tryJoinFromOffcuts(pool, piece){
   let best=null;
@@ -6947,13 +7030,16 @@ function sheetYield(w, h, pieceW, pieceH, allowRotate){
 // piece per sheet (not just whichever wastes least for a single piece) — tie-broken
 // by the smaller sheet. If no stock exists in this thickness, assume a new sheet of
 // the default size will be ordered in that thickness.
-function chooseSheetType(sheetTypes, defaultW, defaultH, pieceW, pieceH, allowRotate, thickness){
+function chooseSheetType(sheetTypes, defaultW, defaultH, pieceW, pieceH, allowRotate, thickness, opts){
   const fits = (w,h) => (pieceW<=w+0.001 && pieceH<=h+0.001) || (allowRotate && pieceH<=w+0.001 && pieceW<=h+0.001);
   const stockCandidates = sheetTypes.filter(t=>t.qtyRemaining>0 && t.thickness===thickness && fits(t.w,t.h));
   if(stockCandidates.length){
+    const bySmallest = opts && opts.sheet === 'area';
     stockCandidates.sort((a,b)=>{
-      const ya = sheetYield(a.w,a.h,pieceW,pieceH,allowRotate), yb = sheetYield(b.w,b.h,pieceW,pieceH,allowRotate);
-      if(yb!==ya) return yb-ya;
+      if(!bySmallest){
+        const ya = sheetYield(a.w,a.h,pieceW,pieceH,allowRotate), yb = sheetYield(b.w,b.h,pieceW,pieceH,allowRotate);
+        if(yb!==ya) return yb-ya;
+      }
       return (a.w*a.h)-(b.w*b.h);
     });
     return {w:stockCandidates[0].w, h:stockCandidates[0].h, type:stockCandidates[0], fromStock:true};
@@ -6961,13 +7047,14 @@ function chooseSheetType(sheetTypes, defaultW, defaultH, pieceW, pieceH, allowRo
   return {w:defaultW, h:defaultH, type:null, fromStock:false};
 }
 
-function fulfilAtomic(atom, pool, allowOptionalJoin, cfg, fulfilResults, state){
-  const offcutHit = tryFulfillFromOffcuts(pool, atom);
+function fulfilAtomic(atom, pool, allowOptionalJoin, cfg, fulfilResults, state, opts){
+  const splitRule = opts && opts.split;
+  const offcutHit = tryFulfillFromOffcuts(pool, atom, opts);
 
   if(offcutHit){
     const src = offcutHit.offcut;
     src.usedUp = true;
-    const leftovers = splitLeftover(src, offcutHit.orient.w, offcutHit.orient.h);
+    const leftovers = splitLeftover(src, offcutHit.orient.w, offcutHit.orient.h, splitRule);
     pushLeftovers(pool, leftovers, state);
     fulfilResults.push({atom, method:'offcut', detail:`Cut from ${src.label}${offcutHit.orient.rot?' (rotated)':''}`,
       sourceUsed:src, orient:offcutHit.orient, leftovers,
@@ -6975,7 +7062,7 @@ function fulfilAtomic(atom, pool, allowOptionalJoin, cfg, fulfilResults, state){
     return;
   }
   // nothing fits — open a new sheet, choosing the best available stock size in the right thickness
-  const chosen = chooseSheetType(state.sheetTypes, cfg.sheetW, cfg.sheetH, atom.w, atom.h, atom.allowRotate, atom.thickness);
+  const chosen = chooseSheetType(state.sheetTypes, cfg.sheetW, cfg.sheetH, atom.w, atom.h, atom.allowRotate, atom.thickness, opts);
   let label;
   if(chosen.fromStock){
     chosen.type.qtyRemaining--;
@@ -6990,11 +7077,11 @@ function fulfilAtomic(atom, pool, allowOptionalJoin, cfg, fulfilResults, state){
   const newSheet = {id:sheetId, w:chosen.w, h:chosen.h, label, usedUp:false, kind:'sheet', thickness:atom.thickness,
     rootId:sheetId, rootLabel:label, rootW:chosen.w, rootH:chosen.h, ax:0, ay:0};
   pool.push(newSheet);
-  const hit2 = tryFulfillFromOffcuts(pool, atom);
+  const hit2 = tryFulfillFromOffcuts(pool, atom, opts);
   if(hit2){
     const src = hit2.offcut;
     src.usedUp = true;
-    const leftovers = splitLeftover(src, hit2.orient.w, hit2.orient.h);
+    const leftovers = splitLeftover(src, hit2.orient.w, hit2.orient.h, splitRule);
     pushLeftovers(pool, leftovers, state);
     fulfilResults.push({atom, method:'sheet', detail:`Cut from ${src.label}${hit2.orient.rot?' (rotated)':''}`,
       sourceUsed:src, orient:hit2.orient, leftovers,
@@ -7002,6 +7089,131 @@ function fulfilAtomic(atom, pool, allowOptionalJoin, cfg, fulfilResults, state){
   } else {
     fulfilResults.push({atom, method:'blocked', detail:'Piece is larger than the sheet itself — check dimensions.'});
   }
+}
+
+// One complete pass over the pieces in the given order. Works on private copies of the offcut pool and the
+// stock counts, so any number of passes can be tried without disturbing each other.
+function alRunPlan(atoms, poolSrc, sheetTypesSrc, cfg, opts){
+  const pool = poolSrc.map(o=>Object.assign({}, o));
+  const sheetTypes = sheetTypesSrc.map(t=>Object.assign({}, t));
+  const fulfilResults = [];
+  const state = {sheetsUsedFromStock:0, sheetsNeededToOrder:0, sheetTypes, sheetCounter:0, genCounter:0, openedSheets:[]};
+  for(const atom of atoms){
+    fulfilAtomic(atom, pool, false, cfg, fulfilResults, state, opts);
+  }
+  return {fulfilResults, pool, state, order:atoms, opts};
+}
+
+// Lower is better, compared left to right: pieces that can't be made, sheets to order, sheets opened in
+// total, total sheet area opened, and finally (bigger is better, hence the minus) the largest single leftover
+// rectangle - so when two plans use the same sheets, the one that keeps its waste in one big reusable piece wins.
+function alPlanScore(run){
+  let blocked = 0;
+  for(const r of run.fulfilResults) if(r.method==='blocked') blocked++;
+  let openedArea = 0;
+  for(const s of run.state.openedSheets) openedArea += s.w*s.h;
+  let biggest = 0;
+  for(const o of run.pool) if(!o.usedUp && o.kind==='offcut') biggest = Math.max(biggest, o.w*o.h);
+  return [blocked, run.state.sheetsNeededToOrder, run.state.openedSheets.length, openedArea, -biggest];
+}
+// `bigGain` = how much bigger (mm2) the largest leftover has to get before it counts as an improvement at all.
+// Keeps the plan from being shuffled around for a trivial gain when it uses the same sheets.
+function alScoreBetter(a, b, bigGain){
+  for(let i=0;i<a.length;i++){
+    const tol = (i===a.length-1) ? bigGain : Math.max(1e-6, Math.abs(a[i])*1e-9, Math.abs(b[i])*1e-9);
+    if(a[i] < b[i]-tol) return true;
+    if(a[i] > b[i]+tol) return false;
+  }
+  return false;
+}
+
+// Small deterministic random-number generator: the same job always gives the same plan.
+function alRng(seed){
+  let t = seed>>>0;
+  return function(){
+    t = (t + 0x6D2B79F5)>>>0;
+    let r = Math.imul(t ^ (t>>>15), 1 | t);
+    r = (r + Math.imul(r ^ (r>>>7), 61 | r)) ^ r;
+    return ((r ^ (r>>>14))>>>0) / 4294967296;
+  };
+}
+
+// Tries the original single pass first, then many other orderings and rules, and returns the best plan.
+// Returns {run, baseline, tried}: `baseline` is the original single-pass result, for comparison.
+const BIG_GAIN_FRACTION = 0.05;
+function alOptimisePlan(atomsByArea, pool, sheetTypes, cfg){
+  const base = alRunPlan(atomsByArea, pool, sheetTypes, cfg, null);
+  let best = base, bestScore = alPlanScore(base), tried = 1;
+  const n = atomsByArea.length;
+  if(n < 2) return {run:best, baseline:base, tried};
+
+  let sheetArea = cfg.sheetW*cfg.sheetH;
+  for(const t of sheetTypes) sheetArea = Math.max(sheetArea, t.w*t.h);
+  const bigGain = sheetArea * BIG_GAIN_FRACTION;
+  const t0 = Date.now(), HARD_STOP_MS = 2500;
+  const consider = (order, opts)=>{
+    const run = alRunPlan(order, pool, sheetTypes, cfg, opts);
+    tried++;
+    const sc = alPlanScore(run);
+    if(alScoreBetter(sc, bestScore, bigGain)){ best = run; bestScore = sc; return true; }
+    return false;
+  };
+
+  const area = a=>a.w*a.h, longS = a=>Math.max(a.w,a.h), shortS = a=>Math.min(a.w,a.h);
+  const by = (...keys)=>atomsByArea.slice().sort((a,b)=>{ for(const k of keys){ const d = k(b)-k(a); if(d) return d; } return 0; });
+  const orders = [
+    atomsByArea,
+    by(longS, shortS),
+    by(shortS, longS),
+    by(a=>a.w, a=>a.h),
+    by(a=>a.h, a=>a.w),
+    by(a=>a.w+a.h, area)
+  ];
+  const fits = ['waste','bssf','blsf','first'];
+  const splits = ['V','H','MAXA','MINA','SAS','LAS'];
+  const multiSize = sheetTypes.some((t,i)=>sheetTypes.some((u,j)=>i!==j && t.thickness===u.thickness));
+  const sheetModes = multiSize ? ['yield','area'] : ['yield'];
+
+  // 1) every combination of a handful of sensible orderings and rules
+  const heavy = n > 150;      // keep very large jobs quick
+  for(let oi=0; oi<orders.length; oi++){
+    if(heavy && oi>2) break;
+    for(const fit of fits) for(const split of splits) for(const sheet of sheetModes){
+      if(oi===0 && fit==='waste' && split==='V' && sheet==='yield') continue;     // that is the baseline
+      if(Date.now()-t0 > HARD_STOP_MS) break;
+      consider(orders[oi], {fit, split, sheet});
+    }
+  }
+
+  // 2) random restarts + hill-climbing from the best plan found so far (seeded, so repeatable)
+  let seed = 12345 + n*7919;
+  for(const a of atomsByArea) seed = (Math.imul(seed, 31) + Math.round(a.w*3 + a.h*7)) | 0;
+  const rnd = alRng(seed);
+  const iters = heavy ? 0 : (n <= 12 ? 1500 : Math.max(0, Math.min(500, Math.floor(30000 / n))));
+  const pickOf = arr=>arr[Math.floor(rnd()*arr.length)];
+  for(let it=0; it<iters; it++){
+    if(Date.now()-t0 > HARD_STOP_MS) break;
+    let order;
+    const mode = rnd();
+    if(mode < 0.45){
+      // noisy "biggest first": sort by size times a random wobble
+      const keyed = atomsByArea.map(a=>({a, k: area(a) * (0.35 + 1.3*rnd())}));
+      keyed.sort((x,y)=>y.k-x.k);
+      order = keyed.map(x=>x.a);
+    } else {
+      // nudge the best order found so far: a few swaps / moves
+      order = best.order.slice();
+      const moves = 1 + Math.floor(rnd()*Math.min(4, n));
+      for(let m=0;m<moves;m++){
+        const i = Math.floor(rnd()*n), j = Math.floor(rnd()*n);
+        if(rnd() < 0.5){ const t = order[i]; order[i] = order[j]; order[j] = t; }
+        else { const [x] = order.splice(i,1); order.splice(j,0,x); }
+      }
+    }
+    const opts = (rnd() < 0.4 && best.opts) ? best.opts : {fit:pickOf(fits), split:pickOf(splits), sheet:pickOf(sheetModes)};
+    consider(order, opts);
+  }
+  return {run:best, baseline:base, tried};
 }
 
 function runCalculation(){
@@ -7077,16 +7289,27 @@ function runCalculation(){
 
   atomicUnits.sort((a,b)=> (b.w*b.h)-(a.w*a.h));
 
-  let fulfilResults = [];
-  let state = {sheetsUsedFromStock:0, sheetsNeededToOrder:0, sheetTypes, sheetCounter:0, genCounter:0, openedSheets:[]};
-  for(const atom of atomicUnits){
-    const allowOptionalJoin = s.joinersAllowed && !atom.groupId;
-    fulfilAtomic(atom, pool, allowOptionalJoin, s, fulfilResults, state);
+  // Try the original single pass AND many other orderings/rules; keep whichever plan uses the fewest sheets
+  // (the original pass is always one of the candidates, so the answer is never worse than before).
+  const optimised = alOptimisePlan(atomicUnits, pool, sheetTypes, s);
+  const bestRun = optimised.run, baseRun = optimised.baseline;
+  const state = bestRun.state;
+  let fulfilResults = bestRun.fulfilResults;
+  // number the sheets in the order the chosen plan opened them, so the diagrams line up with "#1, #2, ..."
+  const rootSeq = {};
+  fulfilResults.forEach(r=>{ if(r.rootId!==undefined && rootSeq[r.rootId]===undefined) rootSeq[r.rootId] = Object.keys(rootSeq).length; });
+  if(bestRun !== baseRun){
+    // keep the step-by-step table in the familiar order: biggest piece first
+    const rank = new Map(atomicUnits.map((a,i)=>[a,i]));
+    fulfilResults = fulfilResults.slice().sort((x,y)=> rank.get(x.atom) - rank.get(y.atom));
   }
+  const sheetsSaved = baseRun.state.openedSheets.length - state.openedSheets.length;
+  const orderSaved = baseRun.state.sheetsNeededToOrder - state.sheetsNeededToOrder;
 
   renderResults({
-    settings: s, blocked, panelGroups, fulfilResults, pool, openedSheets: state.openedSheets,
+    settings: s, blocked, panelGroups, fulfilResults, pool: bestRun.pool, openedSheets: state.openedSheets,
     sheetsUsedFromStock: state.sheetsUsedFromStock, sheetsNeededToOrder: state.sheetsNeededToOrder,
+    rootSeq, rearranged: bestRun !== baseRun, sheetsSaved, orderSaved,
     totalAtoms: atomicUnits.length,
     joinCount: fulfilResults.filter(r=>r.method==='join').length,
     offcutCount: fulfilResults.filter(r=>r.method==='offcut').length,
@@ -7118,6 +7341,17 @@ function renderResults(data){
       tr.innerHTML = `<td>${g.w} x ${g.h}</td><td>${g.thickness}mm</td><td>${g.fromStock}</td><td>${g.toOrder>0?`<span style="color:var(--red);">${g.toOrder}</span>`:'0'}</td><td class="total-cell">${total}</td>`;
       sheetsBody.appendChild(tr);
     });
+  }
+
+  // one honest line about what the smarter search achieved
+  const optNote = document.getElementById('alOptNote');
+  if(optNote){
+    const bits = [];
+    if(data.sheetsSaved > 0) bits.push(`uses ${data.sheetsSaved} fewer sheet${data.sheetsSaved!==1?'s':''} than the basic one-pass layout would`);
+    if(data.orderSaved > 0) bits.push(`orders ${data.orderSaved} fewer new sheet${data.orderSaved!==1?'s':''}`);
+    if(bits.length){ optNote.textContent = '✓ Optimised layout: this plan ' + bits.join(' and ') + '.'; optNote.style.display = 'block'; }
+    else if(data.rearranged){ optNote.textContent = '✓ Optimised layout: same number of sheets, but the pieces are arranged to leave a bigger reusable offcut.'; optNote.style.display = 'block'; }
+    else { optNote.style.display = 'none'; }
   }
 
   const blockedSection = document.getElementById('alBlockedSection');
@@ -7184,11 +7418,16 @@ function renderResults(data){
   data.panelGroups.forEach((g,i)=> cutGrid.appendChild(buildPanelGroupCard(g, data.fulfilResults, i)));
 
   const sheetCuts = data.fulfilResults.filter(r=>r.method==='offcut'||r.method==='sheet');
-  const byRoot = {};
+  let byRoot = {};
   sheetCuts.forEach(r=>{
-    if(!byRoot[r.rootId]) byRoot[r.rootId] = {rootLabel:r.rootLabel, rootW:r.rootW, rootH:r.rootH, cuts:[]};
+    if(!byRoot[r.rootId]) byRoot[r.rootId] = {rootLabel:r.rootLabel, rootW:r.rootW, rootH:r.rootH, cuts:[], seq:(data.rootSeq && data.rootSeq[r.rootId]) || 0};
     byRoot[r.rootId].cuts.push(r);
   });
+  if(data.rootSeq){   // sheet cards in the order the plan opened them (#1, #2, ...)
+    const sorted = {};
+    Object.keys(byRoot).sort((x,y)=>byRoot[x].seq-byRoot[y].seq).forEach(k=>{ sorted[k] = byRoot[k]; });
+    byRoot = sorted;
+  }
   Object.values(byRoot).forEach(root=> cutGrid.appendChild(buildRootSheetCard(root)));
 
   if(cutGrid.children.length===0){
@@ -7453,7 +7692,7 @@ window.Shell = (function(){
     });
   }
 
-  function showToast(msg){
+  function showToast(msg, ms){
     const existing = document.getElementById('shellToast');
     if(existing) existing.remove();
     const el = document.createElement('div');
@@ -7461,7 +7700,7 @@ window.Shell = (function(){
     el.className = 'importModalToast';
     el.textContent = msg;
     document.body.appendChild(el);
-    setTimeout(()=>{ el.remove(); }, 3200);
+    setTimeout(()=>{ el.remove(); }, ms || 3200);
   }
 
   // Counts up once per scanned/printed board — never persisted, so it starts
@@ -7480,6 +7719,7 @@ window.Shell = (function(){
   function openImportModal(){
     const text = window.FWB.getStpPasteText();
     document.getElementById('importModalSummary').textContent = text || '(no struts to import)';
+    setModalWording();
     alBoardCounter++;
     pendingAlItems = window.FWB.getAlItems(alBoardCounter);
     document.getElementById('importModalOverlay').style.display = 'flex';
@@ -7487,6 +7727,28 @@ window.Shell = (function(){
 
   function closeImportModal(){
     document.getElementById('importModalOverlay').style.display = 'none';
+  }
+
+  // Back-to-Back jobs keep their values afterwards (see FWB.finishAfterImport), so the pop-ups must not
+  // promise a reset for them.
+  function setModalWording(){
+    const b2b = !!(window.FWB.isB2BJob && window.FWB.isB2BJob());
+    const tail = b2b ? "This is a Back-to-Back job, so the Freeway Board tab keeps all your values \u2014 switch to Back afterwards and print again."
+                     : "then reset the Freeway Board tab for the next scan.";
+    document.getElementById('importModalText').textContent = (b2b ? "Add this board's struts to your Strut Calculator cut list. " : "Add this board's struts to your Strut Calculator cut list, ") + tail;
+    document.getElementById('alImportModalText').textContent = (b2b ? "Add this board's metal sizes to your Aluminium Calculator cut list. " : "Add this board's metal sizes to your Aluminium Calculator cut list, ") + tail;
+    document.getElementById('importModalYes').textContent = b2b ? 'Yes, Import' : 'Yes, Import & Reset';
+    document.getElementById('alImportModalYes').textContent = b2b ? 'Yes, Import' : 'Yes, Import & Reset';
+  }
+
+  // End of the chain: clears the tab, except for a Back-to-Back job, which keeps everything.
+  function finishChain(addedMsg){
+    const r = window.FWB.finishAfterImport();
+    if(r && r.kept){
+      showToast((addedMsg ? addedMsg + ' ' : '') + 'Back-to-Back job \u2014 your values are kept. Switch to Back in the diagram, then print again.', 6500);
+    } else if(addedMsg){
+      showToast(addedMsg);
+    }
   }
 
   // "Not now" on the Strut prompt — moves straight on to the Aluminium
@@ -7535,7 +7797,7 @@ window.Shell = (function(){
   // this is answered, so the Freeway Board tab resets for the next scan.
   function skipAlImport(){
     closeAlImportModal();
-    window.FWB.resetToDefaults();
+    finishChain('');
   }
 
   // "Yes, Import & Reset" on the Aluminium prompt — adds every pre-built
@@ -7544,12 +7806,7 @@ window.Shell = (function(){
   function confirmAlImport(){
     const added = window.AL.importFromFreewayBoard(pendingAlItems);
     closeAlImportModal();
-    if(added > 0){
-      showToast(`Added ${added} sheet size${added!==1?'s':''} to the Aluminium Calculator.`);
-    } else {
-      showToast('Nothing to import.');
-    }
-    window.FWB.resetToDefaults();
+    finishChain(added > 0 ? `Added ${added} sheet size${added!==1?'s':''} to the Aluminium Calculator.` : 'Nothing to import.');
   }
 
   // Clicking outside either modal counts as "Not now" for that step, so the
