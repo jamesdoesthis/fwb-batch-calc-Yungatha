@@ -614,6 +614,16 @@ body.viewerOpen .fwb-app .panel-grid{grid-template-columns:1fr;}
 .fwb-app .finish-actions .btn-lg{flex:1 1 280px;}
 .fwb-app .finish-actions .btn:not(.btn-lg){flex:1 1 240px; min-height:50px;}
 .fwb-app .finish-note{margin:14px 0 0; font-size:.82rem; color:var(--text-dim); line-height:1.55;}
+.fwb-app .stamp-box{display:flex; flex-wrap:wrap; align-items:center; gap:10px 22px; margin:0 0 16px; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:rgba(0,0,0,.18);}
+.fwb-app .stamp-box[hidden]{display:none;}
+.fwb-app .stamp-box .sb-copy{flex:1 1 260px; min-width:0;}
+.fwb-app .stamp-box .sb-title{font-size:.74rem; letter-spacing:.08em; text-transform:uppercase; color:var(--text-dim); margin-bottom:7px; font-weight:700;}
+.fwb-app .stamp-box .sb-preview{display:flex; flex-wrap:wrap; gap:6px 8px; align-items:center;}
+.fwb-app .stamp-box .sp-fwb{display:inline-block; background:#1d1d1d; color:#ff9f1c; border:2px solid #ff9f1c; border-radius:8px; padding:4px 14px; font-weight:900; font-size:1.55rem; letter-spacing:.03em; line-height:1.15;}
+.fwb-app .stamp-box .sp-dt{display:inline-block; background:#1d1d1d; color:#fff; border:2px solid #5b656c; border-radius:7px; padding:4px 11px; font-weight:800; font-size:1.05rem; letter-spacing:.04em; line-height:1.15;}
+.fwb-app .stamp-box .sb-num{display:flex; flex-direction:column; gap:4px; font-size:.74rem; letter-spacing:.06em; text-transform:uppercase; color:var(--text-dim); font-weight:700;}
+.fwb-app .stamp-box .sb-num input{width:96px; min-height:44px; font-size:1.15rem; font-weight:800; text-align:center;}
+.fwb-app .stamp-box .sb-help{flex:1 1 100%; margin:0; font-size:.8rem; line-height:1.5; color:var(--text-dim);}
 
 /* ---------- calculate row + sticky status bar ---------- */
 .fwb-app .calc-row{display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin:6px 0 26px;}
@@ -1063,6 +1073,7 @@ body.viewerOpen .fwb-app .wrap{max-width:none;}
 .al-app .modal-confirm:hover{background:var(--orange-dark);}
 .al-app .print-only{display:none;}
 @media print{
+#shellToast{display:none!important;}
 .al-app{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 .al-app .no-print{display:none!important;}
 .al-app .print-only{display:block;margin-bottom:8px;}
@@ -1108,6 +1119,9 @@ body.viewerOpen .fwb-app .wrap{max-width:none;}
 .al-app .stc-line{display:flex;justify-content:space-between;align-items:baseline;gap:4px;padding:1px 4px;font-family:'JetBrains Mono',monospace;font-size:7pt;line-height:1.2;border-top:1px solid #e2e2e2;}
 .al-app .stc-label{font-weight:600;color:var(--text);min-width:0;overflow-wrap:anywhere;}
 .al-app .stc-dims{color:var(--text);font-weight:800;font-size:7.5pt;white-space:nowrap;flex-shrink:0;}
+.al-app .fwbchk-section.is-empty{display:none!important;}
+.al-app .fwbchk-section .chk-sub{font-family:'JetBrains Mono',monospace;font-size:7.5pt;font-weight:500;text-transform:none;letter-spacing:0;color:var(--text-mute);}
+.al-app .stc-tick{display:inline-block;width:7pt;height:7pt;border:1.2pt solid #fff;background:#fff;margin-right:5px;vertical-align:-1pt;}
 }
 
 </style>
@@ -1867,6 +1881,17 @@ body.viewerOpen .fwb-app .wrap{max-width:none;}
           <h2>Print &amp; send on</h2>
           <p class="step-sub">Last step &mdash; once the numbers and diagrams above match the drawing.</p>
         </div>
+      </div>
+      <div class="stamp-box" id="fwbStampBox" hidden>
+        <div class="sb-copy">
+          <div class="sb-title">Stamped big on the printout</div>
+          <div class="sb-preview" id="fwbStampPreview" aria-live="polite"></div>
+        </div>
+        <label class="sb-num">
+          <span>Board number</span>
+          <input type="number" id="fwbBoardNum" min="1" max="999" step="1" inputmode="numeric" onchange="FWB.onBoardNumInput()" aria-describedby="fwbBoardNumHelp">
+        </label>
+        <p class="sb-help" id="fwbBoardNumHelp">Goes up by 1 every time you print. It starts at 1 each time this page is opened &mdash; change it here if you're carrying on from earlier boards.</p>
       </div>
       <div class="finish-actions">
         <button type="button" class="btn btn-primary btn-lg" id="printBtn" onclick="FWB.printSchedule()">
@@ -3635,12 +3660,20 @@ function copyStpPasteText(){
   }
 }
 
+let printBusy = false;
 async function printSchedule(){
   if(!lastCalc) return;
+  if(printBusy) return; // a second click while the first print tab is still being prepared would reuse the same FWB number
   if(!flushRecalc()) return; // a box on the form is currently invalid — nothing trustworthy to print
   const d = lastCalc;
+  const boardNum = nextBoardNumber(); // read BEFORE anything else: this is the number stamped on the paper
   const win = window.open('', '_blank'); // opened synchronously, before any await, to avoid popup blockers
   if(!win){ alert('Your browser blocked the print tab. Please allow pop-ups for this page and try again.'); return; }
+  printBusy = true;
+  try { await printScheduleInto(win, d, boardNum); } finally { printBusy = false; }
+}
+
+async function printScheduleInto(win, d, boardNum){
   const thumb = document.getElementById('importThumb');
   const drawingImgSrc = (thumb && thumb.src && thumb.src.startsWith('data:')) ? thumb.src : '';
   const drawingFileName = selectedDrawingFile ? selectedDrawingFile.name : '';
@@ -3658,7 +3691,7 @@ async function printSchedule(){
     }
   }
 
-  win.document.write(buildPrintHTML(d, drawingImgSrc, drawingFileName, cornerCropImgSrc));
+  win.document.write(buildPrintHTML(d, drawingImgSrc, drawingFileName, cornerCropImgSrc, boardNum));
   win.document.close();
 
   // Print once the sheet has loaded, then close the print tab by itself as
@@ -3676,13 +3709,13 @@ async function printSchedule(){
   // Let the app shell know this board's been sent to print — it offers to
   // import these struts into the Strut Calculator right away, alongside the
   // print tab, rather than waiting for that tab to be closed.
-  if(afterPrintHandler) afterPrintHandler(d);
+  if(afterPrintHandler) afterPrintHandler(d, boardNum);
 }
 
 let afterPrintHandler = null;
 function setAfterPrintHandler(fn){ afterPrintHandler = fn; }
 
-function buildPrintHTML(d, drawingImgSrc, drawingFileName, cornerCropImgSrc){
+function buildPrintHTML(d, drawingImgSrc, drawingFileName, cornerCropImgSrc, boardNum){
   // Group boards back to their parent drop tag (B2B produces 2 boards per tag) so each
   // independent drop tag (e.g. Top + Bottom) gets its own accurate summary entry.
   let dtSummary = '';
@@ -3706,9 +3739,9 @@ function buildPrintHTML(d, drawingImgSrc, drawingFileName, cornerCropImgSrc){
         <h2>${p.label}</h2>
         <div class="svg-box">${p.isChevron ? buildChevronSVG(p, true) : buildMainSVG(p, true)}</div>
       </div>`).join('')
-    + (d.hasDroptag ? d.dtBoards.map(board => `
+    + (d.hasDroptag ? d.dtBoards.map((board, i) => `
       <div class="diagram-block dt">
-        <h2>${board.label}</h2>
+        <h2>${board.label}${boardNum ? `<span class="dt-code">DT ${dtCode(boardNum, i)}</span>` : ''}</h2>
         <div class="svg-box">${buildDropTagSVG(board, true)}</div>
       </div>`).join('') : '');
 
@@ -3716,11 +3749,12 @@ function buildPrintHTML(d, drawingImgSrc, drawingFileName, cornerCropImgSrc){
   const drawingPageHtml = hasDrawing ? `
   <div class="drawing-page">
     <img src="${drawingImgSrc}" alt="Uploaded drawing">
+    ${stampHTML(d, boardNum, 'on-drawing')}
   </div>` : '';
 
   return `<!DOCTYPE html>
 <!-- This calculator computation is made by Production Manager John James Malubay for his company he works, Yungatha Pty Ltd, don't copy it. -->
-<html><head><meta charset="UTF-8"><title>Yungatha Freeway Board Strut Schedule</title>
+<html><head><meta charset="UTF-8"><title>${boardNum ? `FWB ${boardNum} - ` : ''}Yungatha Freeway Board Strut Schedule</title>
 <style>
   :root{
     --text:#141414; --text-dim:#555; --line:#c9c9c9; --panel-svg:#f2f2f2;
@@ -3732,7 +3766,7 @@ function buildPrintHTML(d, drawingImgSrc, drawingFileName, cornerCropImgSrc){
   body{ font-family:'Inter',Arial,sans-serif; color:var(--text); margin:0; padding:0; }
   ${hasDrawing ? `
   .drawing-page{
-    page-break-after: always;
+    page-break-after: always; position:relative;
     width:100%; height:190mm; padding:6px 14px;
     display:flex; align-items:center; justify-content:center;
   }
@@ -3754,6 +3788,25 @@ function buildPrintHTML(d, drawingImgSrc, drawingFileName, cornerCropImgSrc){
   .page-match-box img{ width:100%; height:90px; object-fit:contain; display:block; }
   .page-match-box .fname{ font-size:.62rem; color:var(--text-dim); margin-top:4px; word-break:break-all; font-family:'IBM Plex Mono',monospace; line-height:1.2; }
   ` : ''}
+  .header-right{ flex:0 0 auto; display:flex; align-items:flex-start; gap:12px; }
+  /* The big "which FWB is this" stamp. Forced to print its dark box even when the browser's
+     "Background graphics" option is off, so the workshop always sees it. */
+  .fwb-stamp{
+    flex:0 0 auto; min-width:118px; background:#1d1d1d; color:#ff9f1c; border:3px solid #1d1d1d; border-radius:9px;
+    padding:5px 14px 7px; text-align:center; line-height:1;
+    font-family:'Arial Black',Impact,'Inter',Arial,sans-serif; font-weight:900;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+  .fwb-stamp .fs-main{ font-size:34pt; letter-spacing:.02em; white-space:nowrap; }
+  .fwb-stamp .fs-dts{ margin-top:5px; padding-top:5px; border-top:2px solid #ff9f1c; }
+  .fwb-stamp .fs-dt{ font-size:16pt; color:#ffffff; letter-spacing:.04em; white-space:nowrap; padding:1px 0; }
+  .fwb-stamp.many .fs-dts{ display:grid; grid-template-columns:auto auto; column-gap:16px; justify-content:center; }
+  .fwb-stamp.on-drawing{ position:absolute; top:8px; right:16px; z-index:3; }
+  .fwb-stamp.on-drawing .fs-main{ font-size:30pt; }
+  .dt-code{
+    display:inline-block; margin-left:10px; padding:0 8px; border:2px solid var(--text); border-radius:5px;
+    font-size:.95rem; font-weight:900; letter-spacing:.05em; color:var(--text); text-transform:none; vertical-align:middle;
+  }
   h1{ font-size:1.1rem; margin:0 0 2px; }
   .job-line{ font-size:.76rem; color:var(--text-dim); margin-bottom:6px; font-family:'IBM Plex Mono',monospace; }
   .page-body{ flex:1 1 auto; min-height:0; display:flex; gap:14px; }
@@ -3782,7 +3835,10 @@ function buildPrintHTML(d, drawingImgSrc, drawingFileName, cornerCropImgSrc){
         <h1>YUNGATHA &mdash; Freeway Board Strut Schedule</h1>
         <div class="job-line">${jobLine}</div>
       </div>
-      ${hasDrawing ? `<div class="page-match-box"><img src="${cornerCropImgSrc || drawingImgSrc}" alt="Drawing number reference"><div class="fname">${drawingFileName || 'See Page 1'}</div></div>` : ''}
+      <div class="header-right">
+        ${stampHTML(d, boardNum, 'on-sheet')}
+        ${hasDrawing ? `<div class="page-match-box"><img src="${cornerCropImgSrc || drawingImgSrc}" alt="Drawing number reference"><div class="fname">${drawingFileName || 'See Page 1'}</div></div>` : ''}
+      </div>
     </div>
 
     <div class="page-body">
@@ -5032,6 +5088,8 @@ function refreshStatus(){
     ? "Printing also offers to send this board's struts and sheet sizes to the Strut and Aluminium calculators. This is a Back-to-Back job, so every value stays in place afterwards: switch the board to Back in the diagram and print again. Use Start over when you're finished."
     : "Printing also offers to send this board's struts and sheet sizes to the Strut and Aluminium calculators, then clears this tab ready for the next drawing. Prefer not to print? Use the second button.";
 
+  refreshStampPreview();
+
   // in-flow calculate button
   const calcBtn = document.getElementById('calcBtn'), note = document.getElementById('liveNote');
   if(flow.live && !blocking.length){
@@ -5264,32 +5322,91 @@ refreshStatus();
 // FWB never splits them, so each one is a single order line.
 function buildAlItems(d, boardNum){
   const items = [];
-  const boardLabel = `Freeway Board ${boardNum}`;
+  const base = `FWB ${boardNum}`;
+  // Only name the panel when there is more than one on this board ("Main 2", "Chevron 1" -- the same
+  // words the drawing uses), otherwise "FWB 3" on its own is already unmistakable.
+  const multi = d.panels.length > 1;
   d.panels.forEach(p=>{
+    const name = multi ? ' - ' + p.label.replace(/\s*\(B2B\)\s*$/i, '').replace(/\bPanel\b\s*/i, '').trim() : '';
+    const b2b = p.isB2B ? ' - B2B' : '';   // B2B only when this board really is back-to-back
     if(p.numSections > 1 && p.sectionHeights){
       const n = p.sectionHeights.length;
       p.sectionHeights.forEach((h, i)=>{
         items.push({
-          label: `${boardLabel} - ${p.label} (Section ${i+1} of ${n})`,
+          label: `${base}${name} - Sec ${i+1} of ${n}${b2b}`,
           w: p.width, h: round2(h), qty: 1, rotate: true, thickness: '1.6'
         });
       });
     } else {
       items.push({
-        label: `${boardLabel} - ${p.label}`,
+        label: `${base}${name}${b2b}`,
         w: p.width, h: p.height, qty: 1, rotate: true, thickness: '1.6'
       });
     }
   });
   if(d.hasDroptag){
-    d.dtBoards.forEach(board=>{
+    d.dtBoards.forEach((board, i)=>{
       items.push({
-        label: `${boardLabel} - ${board.label}`,
+        label: `${base} - DropTag ${dtCode(boardNum, i)}${board.isDtB2B ? ' - B2B' : ''}`,
         w: board.dtWidth, h: board.dtHeight, qty: 1, rotate: true, thickness: '1.6'
       });
     });
   }
   return items;
+}
+
+// ---------- Board numbering: every scanned/printed board is "FWB 1", "FWB 2", ... ----------
+// Drop tags get the board number plus a letter in the order they are listed: FWB 3 has DT 3A, DT 3B.
+// The Aluminium labels, the cut diagrams, the Summary To Cut and the stamp on the printout all use these
+// same helpers, so the paper and the screen can never disagree.
+function dtCode(boardNum, i){
+  return i < 26 ? `${boardNum}${String.fromCharCode(65 + i)}` : `${boardNum}-${i + 1}`;
+}
+function dtCodes(d, boardNum){
+  return (d && d.hasDroptag) ? d.dtBoards.map((b, i)=>`DT ${dtCode(boardNum, i)}`) : [];
+}
+
+// The Shell owns the running board number (it counts up once per print / send). These two hooks let this
+// tab read it without knowing how it is stored.
+let boardNumGet = null, boardNumSet = null;
+function setBoardNumberHooks(getFn, setFn){ boardNumGet = getFn; boardNumSet = setFn; refreshStampPreview(); }
+function nextBoardNumber(){
+  try{
+    const n = boardNumGet ? parseInt(boardNumGet(), 10) : NaN;
+    return n > 0 ? n : null;
+  } catch(e){ return null; }
+}
+
+// Big, plain "what number is this sheet" stamp for the printout.
+function stampHTML(d, boardNum, extraClass){
+  if(!boardNum) return '';
+  const dts = dtCodes(d, boardNum);
+  return `<div class="fwb-stamp ${extraClass || ''}${dts.length > 2 ? ' many' : ''}">
+      <div class="fs-main">FWB ${boardNum}</div>
+      ${dts.length ? `<div class="fs-dts">${dts.map(t=>`<div class="fs-dt">${t}</div>`).join('')}</div>` : ''}
+    </div>`;
+}
+
+// On-screen preview of that stamp (Print & send step), plus the box to change the number.
+function refreshStampPreview(){
+  const box = document.getElementById('fwbStampBox');
+  if(!box) return;
+  const n = lastCalc ? nextBoardNumber() : null;
+  box.hidden = !n;
+  if(!n) return;
+  const dts = dtCodes(lastCalc, n);
+  document.getElementById('fwbStampPreview').innerHTML =
+    `<span class="sp-fwb">FWB ${n}</span>` + dts.map(t=>`<span class="sp-dt">${t}</span>`).join('');
+  const inp = document.getElementById('fwbBoardNum');
+  if(inp && document.activeElement !== inp) inp.value = String(n);
+}
+function onBoardNumInput(){
+  const inp = document.getElementById('fwbBoardNum');
+  if(!inp) return;
+  const v = parseInt(inp.value, 10);
+  if(v >= 1 && v <= 999 && boardNumSet) boardNumSet(v);
+  inp.value = String(nextBoardNumber() || 1);
+  refreshStampPreview();
 }
 
 window.FWB = {
@@ -5300,6 +5417,7 @@ window.FWB = {
   handleDragOver, handleFileDrop, onDrawingFileSelected, onPointDirectionChange,
   toggleChevronTaperFields, togglePanelTypeFields, setAfterPrintHandler,
   confirmReset, goToStep, barAction, markAllChecked, isB2BJob, finishAfterImport,
+  setBoardNumberHooks, refreshStampPreview, onBoardNumInput,
   getStpPasteText: function(){ flushRecalc(); return lastCalc ? buildStpPasteText(lastCalc) : ''; },
   hasCalculatedStruts: function(){ return !!lastCalc; },
   getAlItems: function(boardNum){ flushRecalc(); return lastCalc ? buildAlItems(lastCalc, boardNum) : []; }
@@ -6670,6 +6788,11 @@ window.STP = {
       <div class="stc-wrap" id="alSummaryToCut"></div>
     </div>
 
+    <div class="print-only stc-section fwbchk-section" id="alFwbCheckSection">
+      <div class="section-title">Drawing Check <span class="chk-sub">&mdash; tick each FWB once every piece listed is cut</span></div>
+      <div class="stc-wrap" id="alFwbCheck"></div>
+    </div>
+
   </div>
 
 </main>
@@ -7506,13 +7629,37 @@ function escHTML(str){
 
 function shortPieceLabel(label){
   return String(label)
-    .replace(/Freeway Board\s*(\d+)/gi, 'FB$1')
+    .replace(/Freeway Board\s*(\d+)/gi, 'FWB $1')
     .replace(/\b(Main|Sub|Chevron) Panel\b/gi, '$1')
     .replace(/\(\s*Section\s*(\d+)\s*of\s*(\d+)\s*\)/gi, 'S$1/$2')
+    .replace(/\bSec\s*(\d+)\s*of\s*(\d+)\b/gi, 'S$1/$2')
     .replace(/\(\s*(B2B)\s*\)/gi, '$1')
     .replace(/\s+-\s+/g, ' · ')
     .replace(/\s{2,}/g, ' ')
     .trim();
+}
+
+// Labels made by the Freeway Board tab look like "FWB 3", "FWB 3 - B2B" or "FWB 3 - DropTag 3A" (older ones
+// say "Freeway Board 3 - ..."). This pulls the board number out so the cut diagrams and the drawing check can
+// say which FWB a piece belongs to. A label somebody typed by hand just returns null and is left alone.
+function parseFwbLabel(label){
+  const m = String(label).match(/^\s*(?:FWB|Freeway\s*Board)\s*(\d+)\s*(?:[-\u2013\u2014\u00b7:]\s*)?(.*)$/i);
+  if(!m) return null;
+  return {fwb: parseInt(m[1], 10), rest: m[2].trim()};
+}
+// "DropTag 3A" / "Drop Tag 3A" / "DT 3A" at the start of the rest of a label -> {code:'3A', tail:'B2B'}
+function parseDtRest(rest){
+  const m = String(rest).match(/^(?:Drop\s*Tag|DT)\s*-?\s*(\d+(?:-\d+|[A-Z])?)\b\s*(?:[-\u00b7]\s*)?(.*)$/i);
+  return m ? {code: m[1].toUpperCase(), tail: m[2].trim()} : null;
+}
+
+// Big text inside a cut-diagram rectangle: "FWB 3 - B2B", "DT - 4A". Other labels are just shortened.
+function diagramPieceText(label){
+  const p = parseFwbLabel(label);
+  if(!p) return shortPieceLabel(label);
+  const dt = parseDtRest(p.rest);
+  if(dt) return `DT - ${dt.code}` + (dt.tail ? ' - ' + shortPieceLabel(dt.tail) : '');
+  return `FWB ${p.fwb}` + (p.rest ? ' - ' + shortPieceLabel(p.rest).replace(/ \u00b7 /g, ' - ') : '');
 }
 
 // Moves the sheet number to the front and drops the word "Sheet", e.g.
@@ -7550,6 +7697,43 @@ function buildSummaryToCut(byRoot){
     return `<div class="stc-block"><div class="stc-head">${escHTML(shortSheetLabel(root.rootLabel))}</div>${lines}</div>`;
   }).join('');
   el.innerHTML = blocks;
+  buildFwbCheck(byRoot);
+}
+
+// "Drawing check" (print only): one little box per FWB, listing every piece that belongs to it and which sheet
+// it is cut from. The workshop ticks a box once all of that FWB's pieces are cut, so no drawing that was handed
+// over can be missed. Only labels made by the Freeway Board tab (FWB n ...) are listed.
+function buildFwbCheck(byRoot){
+  const sec = document.getElementById('alFwbCheckSection');
+  const el = document.getElementById('alFwbCheck');
+  if(!el) return;
+  const byFwb = {};
+  Object.values(byRoot).forEach(root=>{
+    const sm = String(root.rootLabel).match(/#(\d+)\s*$/);
+    const sheet = sm ? '#' + sm[1] : shortSheetLabel(root.rootLabel);
+    root.cuts.forEach(r=>{
+      const p = parseFwbLabel(r.atom.label);
+      if(!p) return;
+      const dt = parseDtRest(p.rest);
+      let name;
+      if(dt) name = `DT ${dt.code}` + (dt.tail ? ' ' + shortPieceLabel(dt.tail) : '');
+      else {
+        const rest = shortPieceLabel(p.rest);
+        name = rest ? (/^(B2B|S\d)/i.test(rest) ? 'Panel ' + rest : rest) : 'Panel';
+      }
+      (byFwb[p.fwb] = byFwb[p.fwb] || []).push({name, dims: `${r.atom.w}x${r.atom.h}`, sheet, isDt: !!dt, code: dt ? dt.code : ''});
+    });
+  });
+  const nums = Object.keys(byFwb).map(Number).sort((a,b)=>a-b);
+  if(sec) sec.classList.toggle('is-empty', nums.length === 0);
+  el.innerHTML = nums.map(n=>{
+    // the panel(s) first, then the drop tags in code order (1A, 1B, ...) - the order they are on the drawing paper
+    byFwb[n].sort((a,b)=> (a.isDt - b.isDt) || (a.code < b.code ? -1 : a.code > b.code ? 1 : 0));
+    const lines = byFwb[n].map(x=>
+      `<div class="stc-line"><span class="stc-label">${escHTML(x.name)} ${escHTML(x.dims)}</span><span class="stc-dims">${escHTML(x.sheet)}</span></div>`
+    ).join('');
+    return `<div class="stc-block fwbchk"><div class="stc-head"><span class="stc-tick"></span>FWB ${n}</div>${lines}</div>`;
+  }).join('');
 }
 
 function svgWrap(vbW, vbH, inner){
@@ -7561,18 +7745,31 @@ function fitFontSize(text, boxW, boxH, charWidthRatio, heightRatio, minSize){
   const byHeight = boxH * heightRatio;
   return Math.max(minSize, Math.min(byWidth, byHeight));
 }
-function rectLabel(x,y,w,h,fill,mainText,subText){
+function rectLabel(x,y,w,h,fill,mainText,subText,mode){
   const cx=x+w/2, cy=y+h/2;
-  if(subText){
-    const mainSize = fitFontSize(mainText, w, h, 0.58, 0.34, 18);
-    const subSize = fitFontSize(subText, w, h, 0.63, 0.18, 13);
+  const vertical = (mode === true || mode === 'v');
+  if(mode === 'flat' && subText){
+    // a long flat piece (a drop tag): size small on the left, the name big on the right, one line
+    const pad = h*0.14;
+    const mainSize = Math.max(14, Math.min(h*0.56, (w*0.58)/(Math.max(String(mainText).length,1)*0.6)));
+    const subSize = Math.max(11, Math.min(mainSize*0.5, (w*0.30)/(Math.max(String(subText).length,1)*0.63)));
     return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" stroke="#1F2428" stroke-width="3"/>
-      <text x="${cx}" y="${cy-mainSize*0.25}" text-anchor="middle" dominant-baseline="middle" font-family="Oswald, sans-serif" font-size="${mainSize}" fill="#1F2428" font-weight="700">${mainText}</text>
-      <text x="${cx}" y="${cy+subSize*1.3}" text-anchor="middle" dominant-baseline="middle" font-family="JetBrains Mono, monospace" font-size="${subSize}" fill="#1F2428" font-weight="600">${subText}</text>`;
+      <text x="${x+pad}" y="${cy}" text-anchor="start" dominant-baseline="middle" font-family="JetBrains Mono, monospace" font-size="${subSize}" fill="#1F2428" font-weight="600">${subText}</text>
+      <text x="${x+w-pad}" y="${cy}" text-anchor="end" dominant-baseline="middle" font-family="Oswald, sans-serif" font-size="${mainSize}" fill="#1F2428" font-weight="700">${mainText}</text>`;
   }
-  const fontSize = fitFontSize(mainText, w, h, 0.63, 0.30, 14);
+  // vertical: a tall narrow piece reads bottom-to-top, so the text gets the long side to spread along
+  const bw = vertical ? h : w, bh = vertical ? w : h;
+  const rot = vertical ? ` transform="rotate(-90 ${cx} ${cy})"` : '';
+  if(subText){
+    const mainSize = fitFontSize(mainText, bw, bh, 0.58, 0.34, 18);
+    const subSize = fitFontSize(subText, bw, bh, 0.63, 0.18, 13);
+    return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" stroke="#1F2428" stroke-width="3"/>
+      <text x="${cx}" y="${cy-mainSize*0.25}"${rot} text-anchor="middle" dominant-baseline="middle" font-family="Oswald, sans-serif" font-size="${mainSize}" fill="#1F2428" font-weight="700">${mainText}</text>
+      <text x="${cx}" y="${cy+subSize*1.3}"${rot} text-anchor="middle" dominant-baseline="middle" font-family="JetBrains Mono, monospace" font-size="${subSize}" fill="#1F2428" font-weight="600">${subText}</text>`;
+  }
+  const fontSize = fitFontSize(mainText, bw, bh, 0.63, 0.30, 14);
   return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" stroke="#1F2428" stroke-width="3"/>
-    <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" font-family="JetBrains Mono, monospace" font-size="${fontSize}" fill="#1F2428" font-weight="700">${mainText}</text>`;
+    <text x="${cx}" y="${cy}"${rot} text-anchor="middle" dominant-baseline="middle" font-family="JetBrains Mono, monospace" font-size="${fontSize}" fill="#1F2428" font-weight="700">${mainText}</text>`;
 }
 function wasteHatch(x,y,w,h){
   if(w<1||h<1) return '';
@@ -7614,12 +7811,14 @@ function buildPanelGroupCard(g, fulfilResults, i){
 function buildRootSheetCard(root){
   let inner = wasteHatch(0,0,root.rootW,root.rootH);
   root.cuts.forEach(r=>{
+    // The piece's name is the big text (so the workshop can see which FWB / drop tag it is), its size sits under it.
     inner += rectLabel(r.ax, r.ay, r.orient.w, r.orient.h, COLORS[r.atom.colorIdx],
-      r.atom.part||`${r.atom.w}x${r.atom.h}`, r.atom.part?`${r.atom.w}x${r.atom.h}`:null);
+      escHTML(diagramPieceText(r.atom.label)), `${r.orient.w}x${r.orient.h}`,
+      r.orient.h > r.orient.w * 1.6 ? 'v' : (r.orient.w >= r.orient.h * 4 ? 'flat' : null));
   });
   const usedArea = root.cuts.reduce((s,r)=>s+r.orient.w*r.orient.h,0);
   const util = ((usedArea/(root.rootW*root.rootH))*100).toFixed(0);
-  const pieceList = root.cuts.map(r=>r.atom.label).join(', ');
+  const pieceList = root.cuts.map(r=>escHTML(r.atom.label)).join(', ');
   const card = document.createElement('div');
   card.className='cut-card';
   card.innerHTML = `
@@ -7762,11 +7961,13 @@ window.Shell = (function(){
   }
 
   // Counts up once per scanned/printed board — never persisted, so it starts
-  // back at 1 each time the app is freshly loaded. Used purely to label the
-  // Aluminium Calculator's imported sheet sizes ("Freeway Board 1", "Freeway
-  // Board 2", ...) in the order the boards were actually scanned.
+  // back at 1 each time the app is freshly loaded (the Freeway Board tab has a box to change it). This is
+  // the "FWB 1", "FWB 2", ... number: it is stamped on the printout AND used to name the Aluminium
+  // Calculator's imported sheet sizes, so the paper and the cut list always agree.
   let alBoardCounter = 0;
   let pendingAlItems = [];
+  function nextBoardNumber(){ return alBoardCounter + 1; }
+  function setNextBoardNumber(n){ if(n >= 1) alBoardCounter = Math.floor(n) - 1; }
 
   // Opened either (a) immediately when Printable PDF is clicked — alongside
   // the print tab, not waiting for it to be closed — or (b) straight away
@@ -7774,13 +7975,16 @@ window.Shell = (function(){
   // printing at all. This is the start of the whole import chain: Strut
   // prompt first, then (regardless of that answer) the Aluminium prompt
   // right after, then the Freeway Board tab resets once both are settled.
-  function openImportModal(){
+  // `num` is the number that was just stamped on the printout (so the cut list can never disagree with the
+  // paper); the plain "send" button has no printout, so it simply takes the next number.
+  function openImportModal(num){
     const text = window.FWB.getStpPasteText();
     document.getElementById('importModalSummary').textContent = text || '(no struts to import)';
     setModalWording();
-    alBoardCounter++;
+    alBoardCounter = (Number.isInteger(num) && num > 0) ? num : alBoardCounter + 1;
     pendingAlItems = window.FWB.getAlItems(alBoardCounter);
     document.getElementById('importModalOverlay').style.display = 'flex';
+    window.FWB.refreshStampPreview();
   }
 
   function closeImportModal(){
@@ -7877,7 +8081,8 @@ window.Shell = (function(){
   // Hook the Freeway Board's "Printable PDF" button up to the import chain:
   // as soon as a board is sent to print, the Strut prompt pops up (then the
   // Aluminium prompt), alongside the print tab.
-  window.FWB.setAfterPrintHandler(openImportModal);
+  window.FWB.setAfterPrintHandler(function(d, num){ openImportModal(num); });
+  window.FWB.setBoardNumberHooks(nextBoardNumber, setNextBoardNumber);
 
   // Same rule for the Aluminium prompt: clicking outside counts as "Not now".
   document.getElementById('alImportModalOverlay').addEventListener('click', function(e){
