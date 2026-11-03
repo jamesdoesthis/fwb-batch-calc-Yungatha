@@ -88,6 +88,50 @@ html,body{margin:0;padding:0;background:var(--charcoal);font-family:'Inter',sans
   padding:12px 22px; border-radius:8px; z-index:9600; box-shadow:0 8px 24px rgba(0,0,0,.4);
 }
 
+/* ===== "IS THIS A JOINING PANEL?" POP-UP (Freeway Board tab) ===== */
+.jpCard{
+  width:100%; max-width:860px; max-height:94vh; overflow:auto; text-align:left; color:#fff;
+  background:linear-gradient(180deg,#23292e,#1c2124); border:1px solid #3a4147; border-top:3px solid var(--orange);
+  border-radius:10px; padding:24px 26px; box-shadow:0 20px 60px rgba(0,0,0,.5);
+}
+.jpCard h3{margin:0 0 8px; font-family:'Oswald',sans-serif; font-size:21px; text-transform:uppercase; letter-spacing:.4px; color:#fff;}
+.jpCard .jpLead{margin:0 0 16px; font-size:13.5px; color:var(--steel); line-height:1.6;}
+.jpCard .jpLead b{color:#fff;}
+.jpRow{border:1px solid #3a4147; border-radius:8px; padding:12px 14px; margin-bottom:10px; background:#161a1d;}
+.jpRow.off .jpWidths{display:none;}
+.jpRowTop{display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;}
+.jpName b{display:block; font-size:15px; color:#fff;}
+.jpName span{font-size:12.5px; color:var(--steel); font-family:'JetBrains Mono',monospace;}
+.jpSeg{display:inline-flex; border:1.5px solid #3a4147; border-radius:7px; overflow:hidden;}
+.jpSeg button{background:none; border:none; color:var(--steel); font:700 13.5px 'Inter',sans-serif; padding:9px 16px; cursor:pointer;}
+.jpSeg button.on{background:var(--orange); color:#1c2124;}
+.jpWidths{margin-top:12px;}
+.jpWidthsLbl{font-size:12.5px; color:var(--steel); margin-bottom:6px;}
+.jpWidthsRow{display:flex; flex-wrap:wrap; align-items:flex-end; gap:8px; font-size:15px;}
+.jpIn{display:flex; flex-direction:column; gap:3px; font-size:11px; color:var(--steel); text-transform:uppercase; letter-spacing:.05em;}
+.jpIn input{width:110px; background:#111417; border:1.5px solid #3a4147; color:#fff; border-radius:6px; padding:8px 10px; font:700 15px 'JetBrains Mono',monospace;}
+.jpIn input:focus{outline:none; border-color:var(--orange);}
+.jpIn.auto input{opacity:.7;}
+.jpPlus{padding-bottom:9px; color:var(--steel);}
+.jpWidthsRow b{padding-bottom:8px; font-family:'JetBrains Mono',monospace;}
+.jpBad{color:#ff7a6b; font-size:12.5px; margin-top:6px; min-height:0;}
+.jpStagger{display:flex; gap:9px; align-items:center; font-size:13.5px; color:#dfe5e8; margin:4px 0 14px; cursor:pointer;}
+.jpStagger input{width:18px; height:18px; accent-color:var(--orange);}
+.jpDraw{margin:6px 0 16px;}
+.jpDrawHead{display:flex; flex-wrap:wrap; gap:10px; align-items:center; font-size:14px;}
+.jpDrawHead .jpPick{display:inline-flex; gap:6px; flex-wrap:wrap;}
+.jpChip{background:none; border:1.5px solid #3a4147; color:var(--steel); border-radius:14px; font:600 12px 'Inter',sans-serif; padding:4px 11px; cursor:pointer;}
+.jpChip.on{border-color:var(--orange); color:#fff;}
+.jpLink{margin-left:auto; background:none; border:none; color:var(--steel); text-decoration:underline; cursor:pointer; font:600 12.5px 'Inter',sans-serif;}
+.jpLink:hover{color:#fff;}
+.jpStage{position:relative; margin:10px auto 0; line-height:0; user-select:none; -webkit-user-select:none; border:1px solid #3a4147; border-radius:6px; overflow:hidden; background:#fff;}
+.jpStage img, .jpStage .jpOver, .jpStage .jpOver svg{position:absolute; inset:0; width:100%; height:100%; display:block;}
+.jpStage .jpOver svg{height:100%;}
+.jpStage .jpHit{position:absolute; inset:0; cursor:crosshair; touch-action:none;}
+.jpHint{font-size:12.5px; color:var(--steel); margin-top:8px; text-align:center; line-height:1.5;}
+.jpCard .importModalActions{margin-top:16px;}
+@media (max-width:600px){ .jpCard{padding:18px 14px;} .jpIn input{width:92px;} }
+
 </style>
 <style>
   #aitGate{
@@ -562,14 +606,16 @@ html,body{margin:0;padding:0;background:var(--charcoal);font-family:'Inter',sans
 .fwb-app .panel-grid{display:grid; grid-template-columns:1fr 1fr; gap:0 28px; align-items:start;}
 .fwb-app .panel-grid > .pcol > .group:first-child, .fwb-app .panel-grid > .pcol > .field:first-child{margin-top:0;}
 body.viewerOpen .fwb-app .panel-grid{grid-template-columns:1fr;}
-.fwb-app .sec-wrap{display:grid; grid-template-columns:1fr 74px; gap:14px; margin-top:14px; align-items:stretch;}
+.fwb-app .sec-wrap{display:grid; grid-template-columns:1fr 104px; gap:14px; margin-top:14px; align-items:stretch;}
 .fwb-app .sec-rows{display:flex; flex-direction:column; gap:12px; min-width:0;}
-.fwb-app .sec-preview{display:flex; flex-direction:column; gap:2px; min-height:120px; border-radius:8px; overflow:hidden;}
-.fwb-app .sec-seg{flex:1 1 0; min-height:22px; display:flex; flex-direction:column; align-items:center; justify-content:center; font:700 .64rem var(--mono); letter-spacing:.04em; border-radius:4px; color:#fff; text-align:center; line-height:1.2; padding:2px;}
+.fwb-app .sec-preview{display:flex; flex-direction:column; gap:2px; min-height:132px; border-radius:8px; overflow:hidden;}
+.fwb-app .sec-seg{flex:1 1 0; min-height:30px; display:flex; flex-direction:column; align-items:center; justify-content:center; font:700 .64rem var(--mono); letter-spacing:.04em; border-radius:4px; color:#fff; text-align:center; line-height:1.2; padding:2px;}
 .fwb-app .sec-seg small{font-weight:500; font-size:.6rem; opacity:.85;}
 .fwb-app .sec-seg.TOP{background:rgba(27,111,176,.75);} .fwb-app .sec-seg.MIDDLE{background:rgba(181,121,10,.78);} .fwb-app .sec-seg.BOTTOM{background:rgba(110,120,128,.8);}
+.fwb-app .sec-seg.UPPER{background:rgba(42,140,122,.78);} .fwb-app .sec-seg.LOWER{background:rgba(181,121,10,.78);}
 .fwb-app .sec-tag{display:inline-block; font:700 .62rem var(--mono); letter-spacing:.1em; padding:2px 7px; border-radius:5px; margin-left:8px; vertical-align:1px; color:#fff;}
 .fwb-app .sec-tag.TOP{background:#1b6fb0;} .fwb-app .sec-tag.MIDDLE{background:#b5790a;} .fwb-app .sec-tag.BOTTOM{background:#6e7880;}
+.fwb-app .sec-tag.UPPER{background:#2a8c7a;} .fwb-app .sec-tag.LOWER{background:#b5790a;}
 .fwb-app .sectionCheck{margin-top:10px;}
 .fwb-app .panel-issues:empty, .fwb-app .heightLimitError:empty, .fwb-app .manualTotalError:empty{display:none;}
 
@@ -675,7 +721,7 @@ body.viewerOpen .fwb-app .wrap{max-width:none;}
   .fwb-app .scan-preview{flex-direction:column;}
   .fwb-app .fwb-bar-inner{padding:10px 14px; gap:10px;}
   .fwb-app .bar-msg{font-size:.8rem;}
-  .fwb-app .sec-wrap{grid-template-columns:1fr 64px;}
+  .fwb-app .sec-wrap{grid-template-columns:1fr 96px;}
   .fwb-app .calc-row .btn-lg{flex:1 1 100%;}
 }
 @media (max-width:560px){
@@ -1124,6 +1170,24 @@ body.viewerOpen .fwb-app .wrap{max-width:none;}
 .al-app .stc-tick{display:inline-block;width:7pt;height:7pt;border:1.2pt solid #fff;background:#fff;margin-right:5px;vertical-align:-1pt;}
 }
 
+
+/* ---------- JOINING PANELS picture on the Aluminium tab (screen + print) ---------- */
+.al-app .jm-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(420px, 1fr)); gap:12px; margin-bottom:14px;}
+.al-app .jm-card{border:1.5px solid #F28C1B; border-radius:8px; overflow:hidden; background:#fff; break-inside:avoid; page-break-inside:avoid;}
+.al-app .jm-head{display:flex; flex-wrap:wrap; align-items:center; gap:10px; padding:6px 10px; background:#1F2428; color:#fff; font:600 12px 'JetBrains Mono',monospace;}
+.al-app .jm-badge, .al-app .jp-pill{display:inline-block; background:#F28C1B; color:#1c1c1c; font:800 10.5px 'Oswald',Arial,sans-serif; letter-spacing:.08em; padding:2px 8px; border-radius:4px; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+.al-app .jp-pill{font-size:9px; padding:1px 6px; margin-left:6px; vertical-align:1px;}
+.al-app .jm-body{padding:6px; background:#fff;}
+.al-app .jm-body svg{max-height:420px; margin:0 auto;}
+.al-app .jm-note{padding:6px 10px; font-size:11.5px; color:#333; background:#FFF6E6; border-top:1px solid #F4D9A8;}
+@media print{
+  .al-app .jm-grid{grid-template-columns:repeat(auto-fit, minmax(160mm, 1fr)); gap:8px; margin-bottom:6px;}
+  .al-app .jm-card{border-radius:0;}
+  .al-app .jm-head{font-size:8.5pt; padding:3px 6px;}
+  .al-app .jm-body{padding:3px;}
+  .al-app .jm-body svg{max-height:92mm;}
+  .al-app .jm-note{font-size:7.5pt; padding:3px 6px;}
+}
 </style>
 <style id="themeUnifyCss">
 /* ===== STRUT + ALUMINIUM TABS — SAME DARK/AMBER THEME AS THE FREEWAY BOARD TAB =====
@@ -1923,6 +1987,153 @@ body.viewerOpen .fwb-app .wrap{max-width:none;}
 </div><!-- /.fwb-app -->
 
 <script>
+// ===================================================================
+// JOINING-PANEL PICTURE
+// A sign that is wider than one aluminium sheet is made from pieces joined side by side. This draws those pieces
+// as a light, see-through tint (in the same colours as the Aluminium cut diagrams) on top of the scanned drawing,
+// so the workshop can still read the drawing underneath. The Freeway Board tab (pop-up + printout) and the
+// Aluminium tab (cut plan) both draw it with this one helper, so the two prints can never disagree.
+// ===================================================================
+window.JoinMap = (function(){
+  'use strict';
+  // Same palette as the Aluminium cut diagrams (the Aluminium tab uses this very list).
+  const COLORS = ['#7FB3D5','#F4B183','#A9D18E','#D9A9D9','#F7CB73','#88C9C9','#E39696','#B7B7EB','#9FD8A0','#F0A8C1'];
+
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function shade(hex, f){ // darker version of a colour, for the outline
+    const n = parseInt(hex.slice(1), 16);
+    const r = Math.round(((n>>16)&255)*f), g = Math.round(((n>>8)&255)*f), b = Math.round((n&255)*f);
+    return `rgb(${r},${g},${b})`;
+  }
+  function partLetter(c){ return String.fromCharCode(65 + c); }
+
+  // p = place from the left (0 = leftmost), n = how many pieces across
+  function colWord(p, n){
+    if(n <= 1) return '';
+    if(n === 2) return p === 0 ? 'LEFT' : 'RIGHT';
+    if(n === 3) return ['LEFT', 'CENTRE', 'RIGHT'][p];
+    return 'COLUMN ' + (p + 1);
+  }
+  // "TOP LEFT", "LOWER MIDDLE RIGHT", or just "LEFT" when the sign is a single row
+  function posWords(secName, secTotal, p, n){
+    return [secTotal > 1 ? secName : '', colWord(p, n)].filter(Boolean).join(' ');
+  }
+  // Staggered seams: counting down from the top, every second row runs the other way round, so the joins
+  // in one row never sit directly above the joins in the next. (idxFromBottom: 0 = bottom row.)
+  function flipFor(idxFromBottom, secTotal, stagger){
+    return !!stagger && ((secTotal - 1 - idxFromBottom) % 2 === 1);
+  }
+
+  // spec = { w, cols:[widths in piece order A,B,C], secs:[ {name, h, flip, colorIdx, cols?} ... ] }  (secs: bottom row first)
+  function layout(spec){
+    const n = spec.secs.length;
+    const totalH = spec.secs.reduce((a, s)=>a + s.h, 0);
+    const pieces = [];
+    let y = 0;
+    for(let t = 0; t < n; t++){
+      const k = n - 1 - t;                       // index from the bottom
+      const sec = spec.secs[k];
+      const cols = sec.cols || spec.cols;
+      const order = cols.map((_, c)=>c);
+      if(sec.flip) order.reverse();
+      let x = 0;
+      order.forEach((c, p)=>{
+        pieces.push({
+          x, y, w: cols[c], h: sec.h, part: partLetter(c),
+          secTag: n > 1 ? `S${k + 1}/${n}` : '', secName: sec.name, colorIdx: sec.colorIdx,
+          pos: posWords(sec.name, n, p, cols.length)
+        });
+        x += cols[c];
+      });
+      y += sec.h;
+    }
+    return { w: spec.w, h: totalH, pieces, rows: n, cols: Math.max.apply(null, spec.secs.map(s=>(s.cols || spec.cols).length)) };
+  }
+
+  // Draws the pieces. opts: { items:[{spec, fwb, box:{x,y,w,h} (0-1 across the picture)}], imgSrc, imgW, imgH,
+  //   noImage (draw only the tint, for the pop-up where the drawing is a separate <img> underneath),
+  //   crop (zoom in on the sign, used on the Aluminium cut plan) }
+  // With no drawing (or no box) it draws a clean, to-scale diagram on a white background instead.
+  function svg(opts){
+    const items = (opts.items || []).filter(it=>it && it.spec && it.spec.secs && it.spec.secs.length);
+    const withBox = items.filter(it=>it.box);
+    const hasImg = !!(opts.imgW > 0 && opts.imgH > 0 && (opts.imgSrc || opts.noImage) && withBox.length === items.length && items.length);
+    let W, H, frames;
+    if(hasImg){
+      W = opts.imgW; H = opts.imgH;
+      frames = items.map(it=>({ it, L: layout(it.spec), bx: it.box.x * W, by: it.box.y * H, bw: it.box.w * W, bh: it.box.h * H }));
+    } else {
+      // clean diagram: every sign stacked on a white sheet, 1000 units wide
+      const padX = 30, gap = 130, top = 8;
+      W = 1000 + padX * 2; H = top;
+      frames = items.map(it=>{
+        const L = layout(it.spec);
+        const bh = Math.max(120, Math.round(1000 * L.h / L.w));
+        const f = { it, L, bx: padX, by: H + 100, bw: 1000, bh };   // 100 units of room above for the JOINING PANEL tag
+        H += gap + bh + 14;
+        return f;
+      });
+    }
+    if(!frames.length) return '';
+
+    // "FWB 1 - S2/2 - A" (plus the panel's short name, e.g. "Main 2", when the board has more than one panel)
+    const nameLine = (f, p)=>`FWB ${f.it.fwb || ''}${f.it.name ? ' - ' + f.it.name : ''} - ${p.secTag ? p.secTag + ' - ' : ''}${p.part}`;
+
+    // one text size for every piece, so the labels look tidy together
+    let fs = 1e9;
+    frames.forEach(f=>{
+      const ux = f.bw / f.L.w, uy = f.bh / f.L.h;
+      f.L.pieces.forEach(p=>{
+        const l1 = nameLine(f, p);
+        const l2 = `${p.pos ? p.pos + ' - ' : ''}${Math.round(p.w)}x${Math.round(p.h)}`;
+        const chars = Math.max(l1.length, l2.length);
+        fs = Math.min(fs, (p.w * ux * 0.9) / (chars * 0.62 + 1.4), p.h * uy * 0.2, f.bw * 0.03);
+      });
+    });
+    fs = Math.max(6, fs);
+
+    let body = '';
+    frames.forEach(f=>{
+      const ux = f.bw / f.L.w, uy = f.bh / f.L.h;
+      f.L.pieces.forEach(p=>{
+        const px = f.bx + p.x * ux, py = f.by + p.y * uy, pw = p.w * ux, ph = p.h * uy;
+        const col = COLORS[((p.colorIdx % COLORS.length) + COLORS.length) % COLORS.length];
+        body += `<rect x="${px.toFixed(1)}" y="${py.toFixed(1)}" width="${pw.toFixed(1)}" height="${ph.toFixed(1)}" fill="${col}" fill-opacity="0.34" stroke="${shade(col, 0.62)}" stroke-opacity="0.95" stroke-width="${(fs * 0.13).toFixed(1)}"/>`;
+        const l1 = nameLine(f, p);
+        const l2 = `${p.pos ? p.pos + ' - ' : ''}${Math.round(p.w)}x${Math.round(p.h)}`;
+        const cw = Math.max(l1.length, l2.length) * fs * 0.62 + fs * 0.9;
+        const cx = px + fs * 0.45, cy = py + fs * 0.45;
+        body += `<rect x="${cx.toFixed(1)}" y="${cy.toFixed(1)}" width="${cw.toFixed(1)}" height="${(fs * 2.55).toFixed(1)}" rx="${(fs * 0.25).toFixed(1)}" fill="#ffffff" fill-opacity="0.86" stroke="${shade(col, 0.62)}" stroke-width="${(fs * 0.07).toFixed(1)}"/>`;
+        body += `<text x="${(cx + fs * 0.45).toFixed(1)}" y="${(cy + fs * 1.05).toFixed(1)}" font-family="Arial, Helvetica, sans-serif" font-size="${fs.toFixed(1)}" font-weight="700" fill="#1F2428">${esc(l1)}</text>`;
+        body += `<text x="${(cx + fs * 0.45).toFixed(1)}" y="${(cy + fs * 2.1).toFixed(1)}" font-family="Arial, Helvetica, sans-serif" font-size="${(fs * 0.92).toFixed(1)}" font-weight="600" fill="#333">${esc(l2)}</text>`;
+      });
+      // the "this is a joining panel" tag, just above the sign (or inside its bottom-right corner when there is no room above)
+      const tag = `JOINING PANEL  ${f.L.cols} ACROSS x ${f.L.rows} HIGH`;
+      const tfs = fs * 1.12, tw = tag.length * tfs * 0.62 + tfs * 1.2, th = tfs * 1.9;
+      let tx = f.bx, ty = f.by - th - fs * 0.25;
+      if(ty < 2){ tx = f.bx + f.bw - tw - fs * 0.4; ty = f.by + f.bh - th - fs * 0.4; }
+      body += `<rect x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" width="${tw.toFixed(1)}" height="${th.toFixed(1)}" rx="${(tfs * 0.3).toFixed(1)}" fill="#F28C1B" stroke="#8a4a00" stroke-width="${(tfs * 0.08).toFixed(1)}"/>`;
+      body += `<text x="${(tx + tfs * 0.6).toFixed(1)}" y="${(ty + th * 0.68).toFixed(1)}" font-family="Arial, Helvetica, sans-serif" font-size="${tfs.toFixed(1)}" font-weight="800" fill="#1c1c1c" xml:space="preserve">${esc(tag)}</text>`;
+    });
+
+    let vb = [0, 0, W, H];
+    if(hasImg && opts.crop){
+      const f = frames[0];
+      const x0 = Math.max(0, f.bx - f.bw * 0.22), y0 = Math.max(0, f.by - f.bh * 0.55);
+      const x1 = Math.min(W, f.bx + f.bw * 1.22), y1 = Math.min(H, f.by + f.bh * 1.55);
+      vb = [x0, y0, x1 - x0, y1 - y0];
+    }
+    const bg = hasImg
+      ? (opts.noImage ? '' : `<image href="${opts.imgSrc}" x="0" y="0" width="${W}" height="${H}" preserveAspectRatio="none"/>`)
+      : `<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb.map(v=>+v.toFixed(1)).join(' ')}" preserveAspectRatio="xMidYMid meet" style="display:block;width:100%;height:auto;" role="img" aria-label="Joining panel layout">${bg}${body}</svg>`;
+  }
+
+  return { COLORS, esc, partLetter, colWord, posWords, flipFor, layout, svg };
+})();
+</script>
+
+<script>
 (function(){
 'use strict';
 // This calculator computation is made by Production Manager John James Malubay for his
@@ -2033,12 +2244,13 @@ function panelFieldsHTML(){
               <option value="1">Single panel, no joiner</option>
               <option value="2" selected>Two sections, one joiner</option>
               <option value="3">Three sections, two joiners</option>
+              <option value="4">Four sections, three joiners</option>
             </select>
           </label>
           <div class="sectionInputs"></div>
           ${helpBlock('Why split a panel into sections?',
             `<p>Struts run parallel to the width. Aluminium sheet only comes up to 1200mm high, so a taller panel is stacked in sections with a joiner between each &mdash; one sheet per section.</p>
-             <p>You decide how many sections and how tall each cut is. The top section is worked out for you: whatever is left of the total height.</p>`)}
+             <p>You decide how many sections (up to four, which uses three joiners) and how tall each cut is. The top section is worked out for you: whatever is left of the total height. Four sections reach up to 4800mm.</p>`)}
         </div>
 
         <div class="group chevGroup" role="group" aria-label="Point cut" style="display:none;">
@@ -2357,6 +2569,10 @@ function setDtMode(el){
   }
 }
 
+// Most sections one panel can be split into (the dropdown goes up to this). Four sections use
+// three joiners and reach 4 x 1200 = 4800mm.
+const MAX_SECTIONS = 4;
+
 function getNumSections(panelEl){
   return parseInt(panelEl.querySelector('.numSections').value);
 }
@@ -2430,11 +2646,21 @@ function buildSectionInputs(panelEl){
   }
   // UI order runs top-to-bottom: ui=0 is Section 1 (TOP, always auto-calculated),
   // ui=n-1 is Section n (BOTTOM). Only ui=1..n-1 (mid/bottom) are editable.
-  const editDefaults = n===2 ? [1200] : [900,1000]; // ui=1 (mid) and ui=2 (bottom) for a 3-section job
+  let editDefaults;
+  if(n===2) editDefaults = [1200];
+  else if(n===3) editDefaults = [900,1000]; // ui=1 (mid) and ui=2 (bottom) for a 3-section job
+  else {
+    // 4 sections (and any taller stack): start with the panel split evenly, rounded up to 5mm and never
+    // over the 1200mm sheet limit, so the auto (top) section starts out about the same size as the rest.
+    // With no height typed yet, fall back to 1000mm. Every box can still be changed by hand.
+    const totalH = parseFloat(panelEl.querySelector('.mpHeight').value);
+    const each = (isFinite(totalH) && totalH > 0) ? Math.min(1200, Math.ceil(totalH / n / 5) * 5) : 1000;
+    editDefaults = new Array(n-1).fill(each);
+  }
   let rows='';
   for(let ui=0; ui<n; ui++){
     const name = sectionNameFor(n-1-ui, n); // TOP / MIDDLE / BOTTOM, same words the printed sheet uses
-    const tag = `<span class="sec-tag ${name.split(' ')[0]}">${name}</span>`;
+    const tag = `<span class="sec-tag ${secClass(name)}">${name}</span>`;
     if(ui===0){
       rows += `<label class="field"><span class="lbl">Section 1 ${tag} &mdash; worked out for you</span>
                  <span class="inwrap"><input type="number" class="sectionAuto" value="0" readonly tabindex="-1" aria-readonly="true"><span class="unit">mm</span></span></label>`;
@@ -2492,7 +2718,7 @@ function updateSectionRemainder(panelEl){
     prev.innerHTML = uiHeights.map((h,ui)=>{
       const name = sectionNameFor(n-1-ui, n);
       const ok = isFinite(h) && h > 0;
-      return `<div class="sec-seg ${name.split(' ')[0]}" style="flex-grow:${ok ? Math.max(h,1) : 1}">${name}<small>${ok ? round2(h) : '?'}</small></div>`;
+      return `<div class="sec-seg ${secClass(name)}" style="flex-grow:${ok ? Math.max(h,1) : 1}">${name}<small>${ok ? round2(h) : '?'}</small></div>`;
     }).join('');
   }
 }
@@ -2665,8 +2891,11 @@ function validateSectionHeights(panelEl){
   }
   const detail = n===1
     ? `The panel height (${round2(heights[0])}mm) exceeds 1200mm.`
-    : `Section${overIdx.length>1?'s':''} ${overIdx.map(o=>round2(o.h)+'mm').join(', ')} exceed 1200mm.`;
-  el.innerHTML = `<div class="alert err">${detail} Our aluminium sheet stock only comes up to 1200mm high &mdash; increase the number of height sections or reduce the section heights so each cut is 1200mm or under.</div>`;
+    : `Section${overIdx.length>1?'s':''} ${overIdx.map(o=>round2(o.h)+'mm').join(', ')} ${overIdx.length>1?'exceed':'exceeds'} 1200mm.`;
+  const advice = n >= MAX_SECTIONS
+    ? `Our aluminium sheet stock only comes up to 1200mm high, and ${MAX_SECTIONS} sections is the most one panel can have (${MAX_SECTIONS} &times; 1200 = ${MAX_SECTIONS*1200}mm). Make the other sections taller (up to 1200mm each) so the top one comes down, or check the panel height.`
+    : `Our aluminium sheet stock only comes up to 1200mm high &mdash; increase the number of height sections or reduce the section heights so each cut is 1200mm or under.`;
+  el.innerHTML = `<div class="alert err">${detail} ${advice}</div>`;
   return true;
 }
 
@@ -3060,6 +3289,9 @@ function buildScheduleRows(d){
 }
 
 let lastCalc = null;
+// Answer to "is this a joining panel?" for the board on screen (see askJoiningPanels):
+// {sig, stagger, imgSrc, imgW, imgH, panels:{ [panel number]: {on, cols:[...], box:{x,y,w,h}|null} }}
+let joinCfg = null;
 
 // Small caption under each diagram heading so the numbers can be matched to the job at a glance.
 function diagramMeta(p){
@@ -3249,12 +3481,23 @@ function toggleOffsetSide(idx){
 const SECTION_STYLES = {
   TOP:    { fill:'#dce8f5', accent:'#1b6fb0' },
   MIDDLE: { fill:'#f6ecd6', accent:'#b5790a' },
+  'UPPER MIDDLE': { fill:'#dcefe9', accent:'#2a8c7a' },  // 4-section boards: two middle sections, told apart by colour
+  'LOWER MIDDLE': { fill:'#f6ecd6', accent:'#b5790a' },
   BOTTOM: { fill:'#ececec', accent:'#555555' }
 };
+// i = position counting up from the BOTTOM sheet (0 = bottom), n = how many sections there are.
 function sectionNameFor(i, n){
   if(i===0) return 'BOTTOM';
   if(i===n-1) return 'TOP';
-  return n===3 ? 'MIDDLE' : `MIDDLE ${i}`;
+  if(n===3) return 'MIDDLE';
+  if(n===4) return i===1 ? 'LOWER MIDDLE' : 'UPPER MIDDLE'; // read top-to-bottom: TOP, UPPER MIDDLE, LOWER MIDDLE, BOTTOM
+  return `MIDDLE ${i}`;
+}
+// CSS class used to colour a section name on the form (TOP / MIDDLE / UPPER / LOWER / BOTTOM).
+function secClass(name){
+  if(name.indexOf('UPPER') === 0) return 'UPPER';
+  if(name.indexOf('LOWER') === 0) return 'LOWER';
+  return name.split(' ')[0];
 }
 
 function buildMainSVG(d, forPrint){
@@ -3308,12 +3551,20 @@ function buildMainSVG(d, forPrint){
       const yT = y0 + panelH - s.end*scaleY + 2;
       const yB = y0 + panelH - s.start*scaleY - 2;
       const mid = (yT+yB)/2;
-      const tall = (yB-yT) >= 70;
-      const big = tall ? 26 : 20, small = tall ? 18 : 14;
+      const bandH = yB - yT;
+      const tall = bandH >= 70, tiny = bandH < 46;   // a short band (e.g. a thin top strip) gets smaller text so it still fits inside
+      let big = tall ? 26 : (tiny ? 14 : 20), small = tall ? 18 : (tiny ? 11 : 14);
+      // Longer names ("UPPER MIDDLE") shrink a little so they never run off the left edge of the drawing
+      const nameLen = s.name.length + 3 + String(round2(s.h)).length;
+      const cutLen = `Cut: ${round2(d.width)} x ${round2(s.h)}mm`.length;
+      big = Math.min(big, 212/(nameLen*0.62));
+      small = Math.min(small, 212/(cutLen*0.6));
+      const line1Y = tiny ? mid-3 : mid-2;
+      const line2Y = tiny ? mid+small+3 : mid+small+5;
       sectionLabels += `
         <path d="M${xb+8},${yT} H${xb} V${yB} H${xb+8}" fill="none" stroke="${st.accent}" stroke-width="4"/>
-        <text x="${xb-14}" y="${mid-2}" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="${big}" fill="#141414">${s.name} &mdash; ${round2(s.h)}</text>
-        <text x="${xb-14}" y="${mid+small+5}" text-anchor="end" font-family="IBM Plex Mono, monospace, Consolas" font-weight="700" font-size="${small}" fill="#333">Cut: ${round2(d.width)} &times; ${round2(s.h)}mm</text>`;
+        <text x="${xb-14}" y="${line1Y}" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="${big.toFixed(1)}" fill="#141414">${s.name} &mdash; ${round2(s.h)}</text>
+        <text x="${xb-14}" y="${line2Y}" text-anchor="end" font-family="IBM Plex Mono, monospace, Consolas" font-weight="700" font-size="${small.toFixed(1)}" fill="#333">Cut: ${round2(d.width)} &times; ${round2(s.h)}mm</text>`;
     });
 
     sectionNote = `<text x="${x0+panelW/2}" y="${y0+panelH+34}" fill="var(--text-dim)" font-size="13" text-anchor="middle" font-family="Inter, Arial, sans-serif">Schematic &mdash; not to scale. Follow the dimensions shown.</text>`;
@@ -3529,6 +3780,7 @@ function resetToDefaults(){
   flow.live = false; flow.stale = false; flow.attempted = false; flow.edited = false; flow.scanDone = false;
   flow.issues = []; flow.problems = []; flow.totals = null;
   lastCalc = null;
+  joinCfg = null;
   document.getElementById('panelsList').innerHTML = '';
   panelIds = [];
   panelCounter = 0;
@@ -3660,11 +3912,301 @@ function copyStpPasteText(){
   }
 }
 
+// ===================================================================
+// "IS THIS A JOINING PANEL?"
+// Asked when a board is printed or sent on, but only when a panel is wider than the Aluminium tab's longest
+// cut (3200mm by default) -- narrower signs are cut from one sheet, so there is nothing to join.
+// The answer (which panels, how wide each piece is, where the sign sits on the drawing) is remembered for the
+// board on screen, so printing and then sending to the other tabs only asks once.
+// ===================================================================
+
+function alCutLimit(){
+  try{ const l = window.AL && window.AL.getLimits && window.AL.getLimits(); if(l && l.maxCutLen > 0) return l.maxCutLen; }catch(e){}
+  return 3200;
+}
+function alRowCount(){
+  try{ return (window.AL && window.AL.getOrderRowCount) ? window.AL.getOrderRowCount() : 0; }catch(e){ return 0; }
+}
+function drawingInfo(){
+  const t = document.getElementById('importThumb');
+  const src = (t && t.src && t.src.startsWith('data:')) ? t.src : '';
+  return { src, w: src ? (t.naturalWidth || 0) : 0, h: src ? (t.naturalHeight || 0) : 0 };
+}
+// Changes whenever a size, the drawing (or its rotation) or the 3200mm limit changes -- then the answer is asked again.
+function joinSig(d){
+  const di = drawingInfo();
+  return d.panels.map(p=>[p.width, p.height, (p.sectionHeights || []).join('/')].join('x')).join('|')
+    + '#' + alCutLimit() + '#' + di.src.length + ':' + di.src.slice(-32);
+}
+function joinEligible(d){
+  const lim = alCutLimit();
+  const out = [];
+  d.panels.forEach((p, i)=>{ if(!p.isChevron && p.width > lim) out.push(i); });
+  return out;
+}
+function joinColCount(w){ return Math.max(2, Math.ceil(w / alCutLimit())); }
+function joinColsOk(cols, w){
+  const lim = alCutLimit();
+  return cols.every(c=>c > 0 && c <= lim + 0.5) && Math.abs(cols.reduce((a, b)=>a + b, 0) - w) < 0.5;
+}
+// First guess at the piece widths: round the even split UP to the next 500mm, so 5700 becomes 3000 + 2700.
+// Pieces of different widths are what let the joins be staggered; equal pieces get nudged apart by 300mm.
+function defaultJoinCols(w){
+  const lim = alCutLimit(), n = joinColCount(w);
+  const capped = Math.floor(lim / 100) * 100;
+  let first = Math.min(Math.ceil(w / n / 500) * 500, capped);
+  if(n === 2 && Math.abs((w - first) - first) < 1) first = Math.min(first + 300, capped);
+  const cols = [];
+  for(let i = 0; i < n - 1; i++) cols.push(first);
+  cols.push(round2(w - first * (n - 1)));
+  if(joinColsOk(cols, w)) return cols;
+  const even = [];
+  for(let i = 0; i < n - 1; i++) even.push(Math.round(w / n));
+  even.push(round2(w - even.reduce((a, b)=>a + b, 0)));
+  return even;
+}
+function panelSectionHeights(p){
+  return (p.numSections > 1 && p.sectionHeights) ? p.sectionHeights : [p.height];
+}
+// Same colours the Aluminium cut diagrams will use: they hand out one colour per order line, in the order the
+// lines are imported (every section of every panel, then the drop tags), after the lines already there.
+function joinColorStart(d, pi, base){
+  let idx = base;
+  for(let k = 0; k < pi; k++) idx += panelSectionHeights(d.panels[k]).length;
+  return idx;
+}
+function panelShortName(p){ return p.label.replace(/\s*\(B2B\)\s*$/i, '').replace(/\bPanel\b\s*/i, '').trim(); }
+function joinSpecFor(d, pi, cols, stagger, colorStart){
+  const p = d.panels[pi];
+  const hs = panelSectionHeights(p);
+  const n = hs.length;
+  return {
+    w: p.width, cols: cols.slice(),
+    secs: hs.map((h, i)=>({ name: n > 1 ? sectionNameFor(i, n) : '', h, flip: JoinMap.flipFor(i, n, stagger), colorIdx: (colorStart + i) % JoinMap.COLORS.length }))
+  };
+}
+function joinGroupsForPrint(d, boardNum){
+  if(!joinCfg || joinCfg.sig !== joinSig(d)) return [];
+  const base = alRowCount();
+  const multi = d.panels.length > 1;
+  const out = [];
+  d.panels.forEach((p, pi)=>{
+    const e = joinCfg.panels[pi];
+    if(!e || !e.on) return;
+    out.push({ pi, label: p.label, fwb: boardNum, name: multi ? panelShortName(p) : '', box: e.box,
+      spec: joinSpecFor(d, pi, e.cols, joinCfg.stagger, joinColorStart(d, pi, base)) });
+  });
+  return out;
+}
+// The drawing + box are kept on the page so the Aluminium cut plan (printed later, on another tab) can show the same picture.
+function registerJoinStore(boardNum){
+  if(!lastCalc || !joinCfg || joinCfg.sig !== joinSig(lastCalc)) return;
+  const store = (window.JoinStore = window.JoinStore || {});
+  const panels = {};
+  Object.keys(joinCfg.panels).forEach(k=>{ const e = joinCfg.panels[k]; if(e.on && e.box) panels[k] = { box: e.box }; });
+  store[boardNum] = { img: joinCfg.imgSrc, imgW: joinCfg.imgW, imgH: joinCfg.imgH, panels };
+}
+
+// proceed(true) carries on with the print / send; proceed(false) means they backed out. When the pop-up is
+// needed, proceed is called straight from the button click (so the browser still lets the print tab open).
+function askJoiningPanels(proceed){
+  flushRecalc();
+  const d = lastCalc;
+  if(!d){ proceed(true); return; }
+  const elig = joinEligible(d);
+  if(!elig.length){ joinCfg = null; proceed(true); return; }
+  if(joinCfg && joinCfg.sig === joinSig(d)){ proceed(true); return; }
+  openJoinDialog(d, elig, proceed);
+}
+
+function openJoinDialog(d, elig, proceed){
+  if(document.getElementById('fwbJoinDialog')) return;
+  const di = drawingInfo();
+  const hasImg = !!(di.src && di.w > 0 && di.h > 0);
+  const boardNum = nextBoardNumber();
+  const base = alRowCount();
+  const prevFocus = document.activeElement;
+  const st = {};
+  elig.forEach(pi=>{ st[pi] = { on: true, cols: defaultJoinCols(d.panels[pi].width), box: null }; });
+  const multiRow = elig.some(pi=>panelSectionHeights(d.panels[pi]).length > 1);
+  let stagger = true;
+  let active = elig[0];
+
+  const ov = document.createElement('div');
+  ov.id = 'fwbJoinDialog';
+  ov.className = 'importModalOverlay no-print';
+  ov.setAttribute('role', 'dialog');
+  ov.setAttribute('aria-modal', 'true');
+  ov.setAttribute('aria-labelledby', 'fwbJoinTitle');
+  const rowsHTML = elig.map(pi=>{
+    const p = d.panels[pi];
+    const n = st[pi].cols.length;
+    const inputs = st[pi].cols.map((c, i)=>{
+      const auto = i === n - 1;
+      return `${i ? '<span class="jpPlus">+</span>' : ''}<label class="jpIn${auto ? ' auto' : ''}"><span>${auto ? 'Last piece (auto)' : 'Piece ' + JoinMap.partLetter(i)}</span><input type="number" inputmode="numeric" data-pi="${pi}" data-c="${i}" value="${c}"${auto ? ' readonly tabindex="-1"' : ''}></label>`;
+    }).join('');
+    return `<div class="jpRow" data-pi="${pi}">
+        <div class="jpRowTop">
+          <div class="jpName"><b>${p.label}</b><span>${round2(p.width)} &times; ${round2(p.height)}mm &middot; ${panelSectionHeights(p).length} row${panelSectionHeights(p).length > 1 ? 's' : ''} high</span></div>
+          <div class="jpSeg" role="group" aria-label="Is ${p.label} a joining panel?">
+            <button type="button" class="on" data-yn="yes" aria-pressed="true">Yes, joining</button>
+            <button type="button" data-yn="no" aria-pressed="false">No</button>
+          </div>
+        </div>
+        <div class="jpWidths">
+          <div class="jpWidthsLbl">Width of each piece, left to right:</div>
+          <div class="jpWidthsRow">${inputs}<span class="jpPlus">=</span><b>${round2(p.width)}</b></div>
+          <div class="jpBad" data-bad="${pi}" aria-live="polite"></div>
+        </div>
+      </div>`;
+  }).join('');
+  ov.innerHTML = `<div class="jpCard">
+      <h3 id="fwbJoinTitle">Is this a joining panel?</h3>
+      <p class="jpLead">A joining panel is a sign too wide for one aluminium sheet, so it is made from pieces joined side by side. Say <b>Yes</b> and the printed drawing and the Aluminium cut plan will show the workshop where each piece goes.</p>
+      <div class="jpRows">${rowsHTML}</div>
+      ${multiRow ? `<label class="jpStagger"><input type="checkbox" id="fwbJoinStagger" checked> <span>Flip every second row, so the joins don't line up one above the other</span></label>` : ''}
+      ${hasImg ? `<div class="jpDraw" id="fwbJoinDraw">
+          <div class="jpDrawHead"><b>Drag a box around the sign on your drawing</b>
+            <span class="jpPick" id="fwbJoinPick"></span>
+            <button type="button" class="jpLink" id="fwbJoinClear">Clear box</button></div>
+          <div class="jpStage" id="fwbJoinStage" style="aspect-ratio:${di.w}/${di.h}; width:min(100%, ${(46 * di.w / di.h).toFixed(1)}vh);">
+            <img src="${di.src}" alt="Your drawing" draggable="false">
+            <div class="jpOver" id="fwbJoinOver"></div>
+            <div class="jpHit" id="fwbJoinHit"></div>
+          </div>
+          <div class="jpHint" id="fwbJoinHint"></div>
+        </div>` : `<div class="jpHint">No drawing is loaded, so the printouts will show a clean to-scale diagram of the pieces.</div>`}
+      <div class="importModalActions">
+        <button type="button" class="importModalSkip" data-act="cancel">Cancel</button>
+        <button type="button" class="importModalConfirm" data-act="ok">Continue</button>
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+
+  const q = (s)=>ov.querySelector(s);
+  const onPanels = ()=>elig.filter(pi=>st[pi].on);
+  const specFor = (pi)=>joinSpecFor(d, pi, st[pi].cols, stagger, joinColorStart(d, pi, base));
+
+  function refreshColsUI(pi){
+    const p = d.panels[pi], c = st[pi].cols;
+    c[c.length - 1] = round2(p.width - c.slice(0, -1).reduce((a, b)=>a + b, 0));
+    const last = q(`input[data-pi="${pi}"][data-c="${c.length - 1}"]`);
+    if(last) last.value = c[c.length - 1];
+    const bad = q(`[data-bad="${pi}"]`);
+    const ok = joinColsOk(c, p.width);
+    if(bad) bad.textContent = ok ? '' : `Each piece must be more than 0 and no longer than ${alCutLimit()}mm, and together they must make ${round2(p.width)}mm.`;
+    return ok;
+  }
+  function refreshPreview(){
+    if(!hasImg) return;
+    const items = onPanels().filter(pi=>st[pi].box).map(pi=>({ spec: specFor(pi), fwb: boardNum || '', name: d.panels.length > 1 ? panelShortName(d.panels[pi]) : '', box: st[pi].box }));
+    q('#fwbJoinOver').innerHTML = items.length ? JoinMap.svg({ items, imgW: di.w, imgH: di.h, noImage: true }) : '';
+    const pick = q('#fwbJoinPick');
+    const on = onPanels();
+    if(!on.length){ q('#fwbJoinDraw').style.display = 'none'; return; }
+    q('#fwbJoinDraw').style.display = '';
+    if(!on.includes(active)) active = on[0];
+    pick.innerHTML = on.length > 1
+      ? on.map(pi=>`<button type="button" class="jpChip${pi === active ? ' on' : ''}" data-pick="${pi}">${d.panels[pi].label}${st[pi].box ? ' &#10003;' : ''}</button>`).join('')
+      : '';
+    q('#fwbJoinHint').textContent = st[active].box
+      ? 'Looks right? Press Continue. You can drag a new box to try again.'
+      : 'Press and drag from one corner of the sign to the opposite corner. Skip this and a clean diagram is used instead.';
+  }
+
+  ov.addEventListener('click', e=>{
+    const yn = e.target.closest && e.target.closest('[data-yn]');
+    if(yn){
+      const pi = parseInt(yn.closest('.jpRow').dataset.pi, 10);
+      st[pi].on = yn.dataset.yn === 'yes';
+      yn.parentNode.querySelectorAll('button').forEach(b=>{ const on = b === yn; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+      yn.closest('.jpRow').classList.toggle('off', !st[pi].on);
+      refreshPreview();
+      return;
+    }
+    const pick = e.target.closest && e.target.closest('[data-pick]');
+    if(pick){ active = parseInt(pick.dataset.pick, 10); refreshPreview(); return; }
+    if(e.target.id === 'fwbJoinClear'){ st[active].box = null; refreshPreview(); return; }
+    if(e.target === ov){ done(false); return; }
+    const act = e.target.closest && e.target.closest('[data-act]');
+    if(act){
+      if(act.dataset.act === 'cancel'){ done(false); return; }
+      // Continue: every piece width must be sensible first
+      let allOk = true;
+      onPanels().forEach(pi=>{ if(!refreshColsUI(pi)) allOk = false; });
+      if(!allOk){ const bad = q('.jpBad:not(:empty)'); if(bad) bad.scrollIntoView({block:'center'}); return; }
+      joinCfg = { sig: joinSig(d), stagger, imgSrc: hasImg ? di.src : '', imgW: di.w, imgH: di.h, panels: {} };
+      elig.forEach(pi=>{ joinCfg.panels[pi] = { on: st[pi].on, cols: st[pi].cols.slice(), box: st[pi].box ? Object.assign({}, st[pi].box) : null }; });
+      done(true);
+    }
+  });
+  ov.addEventListener('input', e=>{
+    const inp = e.target;
+    if(inp.id === 'fwbJoinStagger'){ stagger = inp.checked; refreshPreview(); return; }
+    if(inp.dataset && inp.dataset.c !== undefined){
+      const pi = parseInt(inp.dataset.pi, 10), c = parseInt(inp.dataset.c, 10);
+      st[pi].cols[c] = parseFloat(inp.value) || 0;
+      refreshColsUI(pi);
+      refreshPreview();
+    }
+  });
+
+  // drag a box on the drawing
+  const hit = q('#fwbJoinHit');
+  if(hit){
+    let sx = 0, sy = 0, dragging = false, before = null;
+    const rel = (e)=>{
+      const r = q('#fwbJoinStage').getBoundingClientRect();
+      return { x: Math.min(1, Math.max(0, (e.clientX - r.left) / (r.width || 1))), y: Math.min(1, Math.max(0, (e.clientY - r.top) / (r.height || 1))) };
+    };
+    hit.addEventListener('pointerdown', e=>{
+      e.preventDefault();
+      const p = rel(e);
+      sx = p.x; sy = p.y; dragging = true; before = st[active].box;
+      try{ hit.setPointerCapture(e.pointerId); }catch(err){}
+    });
+    hit.addEventListener('pointermove', e=>{
+      if(!dragging) return;
+      const p = rel(e);
+      st[active].box = { x: Math.min(sx, p.x), y: Math.min(sy, p.y), w: Math.abs(p.x - sx), h: Math.abs(p.y - sy) };
+      refreshPreview();
+    });
+    const end = ()=>{
+      if(!dragging) return;
+      dragging = false;
+      const b = st[active].box;
+      if(!b || b.w < 0.04 || b.h < 0.02){ st[active].box = before; } // just a click, not a drag
+      refreshPreview();
+    };
+    hit.addEventListener('pointerup', end);
+    hit.addEventListener('pointercancel', end);
+  }
+
+  function done(ok){
+    document.removeEventListener('keydown', onKey, true);
+    ov.remove();
+    try{ if(prevFocus && prevFocus.focus) prevFocus.focus({preventScroll:true}); }catch(err){}
+    proceed(ok);
+  }
+  const onKey = (e)=>{ if(e.key === 'Escape'){ e.preventDefault(); done(false); } };
+  document.addEventListener('keydown', onKey, true);
+
+  elig.forEach(pi=>refreshColsUI(pi));
+  refreshPreview();
+  const first = q('.jpSeg button');
+  if(first) first.focus();
+}
+
 let printBusy = false;
-async function printSchedule(){
-  if(!lastCalc) return;
-  if(printBusy) return; // a second click while the first print tab is still being prepared would reuse the same FWB number
-  if(!flushRecalc()) return; // a box on the form is currently invalid — nothing trustworthy to print
+function printSchedule(){
+  return new Promise(resolve=>{
+    if(!lastCalc || printBusy) { resolve(); return; } // a second click while the first print tab is still being prepared would reuse the same FWB number
+    if(!flushRecalc()) { resolve(); return; } // a box on the form is currently invalid — nothing trustworthy to print
+    // Ask "is this a joining panel?" first (only for signs wide enough to need it), then print
+    askJoiningPanels(ok=>{ resolve(ok ? doPrint() : undefined); });
+  });
+}
+async function doPrint(){
   const d = lastCalc;
   const boardNum = nextBoardNumber(); // read BEFORE anything else: this is the number stamped on the paper
   const win = window.open('', '_blank'); // opened synchronously, before any await, to avoid popup blockers
@@ -3746,9 +4288,22 @@ function buildPrintHTML(d, drawingImgSrc, drawingFileName, cornerCropImgSrc, boa
       </div>`).join('') : '');
 
   const hasDrawing = !!(drawingImgSrc && drawingImgSrc.startsWith('data:'));
+  // Joining panels (answered on the Print pop-up): the pieces are tinted lightly over the drawing itself; any panel
+  // without a box on the drawing (or when there is no drawing) gets a clean diagram beside the cut summary instead.
+  const joinGroups = joinGroupsForPrint(d, boardNum);
+  const onDrawing = (hasDrawing && joinCfg && joinCfg.imgSrc === drawingImgSrc && joinCfg.imgW > 0) ? joinGroups.filter(g=>g.box) : [];
+  const cleanOnes = joinGroups.filter(g=>onDrawing.indexOf(g) < 0);
+  const drawingFigure = onDrawing.length
+    ? JoinMap.svg({ items: onDrawing.map(g=>({ spec: g.spec, fwb: g.fwb, name: g.name, box: g.box })), imgSrc: drawingImgSrc, imgW: joinCfg.imgW, imgH: joinCfg.imgH })
+    : `<img src="${drawingImgSrc}" alt="Uploaded drawing">`;
+  const cleanFigure = cleanOnes.length ? JoinMap.svg({ items: cleanOnes.map(g=>({ spec: g.spec, fwb: g.fwb, name: g.name })) }) : '';
+  const joinFlag = joinGroups.length ? `<div class="join-flag"><b>JOINING PANEL</b> &mdash; ${joinGroups.map(g=>{
+      const L = JoinMap.layout(g.spec);
+      return `${g.label}: ${L.cols} pieces across${L.rows > 1 ? ` &times; ${L.rows} rows high` : ''}`;
+    }).join(' &nbsp;|&nbsp; ')}. Piece names are on the Aluminium cut plan.</div>` : '';
   const drawingPageHtml = hasDrawing ? `
   <div class="drawing-page">
-    <img src="${drawingImgSrc}" alt="Uploaded drawing">
+    ${drawingFigure}
     ${stampHTML(d, boardNum, 'on-drawing')}
   </div>` : '';
 
@@ -3771,7 +4326,16 @@ function buildPrintHTML(d, drawingImgSrc, drawingFileName, cornerCropImgSrc, boa
     display:flex; align-items:center; justify-content:center;
   }
   .drawing-page img{ max-width:100%; max-height:100%; object-fit:contain; }
+  .drawing-page svg{ max-height:100%; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   ` : ''}
+  .join-flag{
+    display:inline-block; margin:2px 0 6px; padding:3px 10px; border-radius:5px; background:#F28C1B; color:#1c1c1c;
+    font-size:.74rem; font-weight:600; -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+  .join-flag b{ letter-spacing:.04em; }
+  .join-clean{ margin-bottom:10px; }
+  .join-clean svg{ height:auto; border:1px solid var(--line); border-radius:6px; }
+  ${cleanOnes.length ? '.side-col{ flex-basis:360px; }' : ''}
   .schedule-page{
     padding:6px 14px;
     height:185mm; max-height:185mm; overflow:hidden;
@@ -3834,6 +4398,7 @@ function buildPrintHTML(d, drawingImgSrc, drawingFileName, cornerCropImgSrc, boa
       <div class="header-text">
         <h1>YUNGATHA &mdash; Freeway Board Strut Schedule</h1>
         <div class="job-line">${jobLine}</div>
+        ${joinFlag}
       </div>
       <div class="header-right">
         ${stampHTML(d, boardNum, 'on-sheet')}
@@ -3846,6 +4411,7 @@ function buildPrintHTML(d, drawingImgSrc, drawingFileName, cornerCropImgSrc, boa
         ${diagramBlocks}
       </div>
       <div class="side-col">
+        ${cleanFigure ? `<div class="join-clean">${cleanFigure}</div>` : ''}
         <div class="cut-summary">
           <h2>Summary to Cut</h2>
           <ul>${cutLines.map(l=>{
@@ -4838,10 +5404,12 @@ function applyExtractedData(extracted, methodLabel){
     // Same explicit-reset treatment for corner crop.
     panelEl.querySelector('.cropDeg').value = extracted.cornerCropValue != null ? extracted.cornerCropValue : 300;
 
-    // Height "stop gate": >1200mm -> 2 sections/1 joiner, >2400mm -> 3 sections/2 joiners
+    // Height "stop gate": >1200mm -> 2 sections/1 joiner, >2400mm -> 3 sections/2 joiners,
+    // >3600mm -> 4 sections/3 joiners (4 is the most; anything over 4800mm shows the over-limit message)
     const h = extracted.height != null ? extracted.height : parseFloat(panelEl.querySelector('.mpHeight').value||0);
     let numSections = 1;
-    if(h > 2400) numSections = 3;
+    if(h > 3600) numSections = 4;
+    else if(h > 2400) numSections = 3;
     else if(h > 1200) numSections = 2;
     panelEl.querySelector('.numSections').value = String(numSections);
     buildSectionInputs(panelEl);
@@ -4983,7 +5551,12 @@ function collectIssues(){
     if(ms && ms.value !== '' && !(numVal(ms) > 0)) add(ms, 'Use a spacing above 0, or leave it blank for 350mm.', `${name}: max spacing`, {soft:true});
 
     if(validateSectionHeights(panelEl)){
-      add(overLimitElement(panelEl), 'Over the 1200mm sheet limit — add a section or reduce the height.', `${name}: a cut is over the 1200mm sheet limit`);
+      const atMax = !isChev && getNumSections(panelEl) >= MAX_SECTIONS;
+      add(overLimitElement(panelEl),
+        isChev ? 'Over the 1200mm sheet limit — reduce the height.'
+        : atMax ? `Over the 1200mm sheet limit — ${MAX_SECTIONS} sections is the most (up to ${MAX_SECTIONS*1200}mm). Make the other sections taller, or check the height.`
+        : 'Over the 1200mm sheet limit — add a section or reduce the height.',
+        `${name}: a cut is over the 1200mm sheet limit`);
     }
     if(panelEl.dataset.mode === 'manual' && validateManualTotal(panelEl)){
       const minReq = minStiffenerTotal(panelEl);
@@ -5326,22 +5899,33 @@ function buildAlItems(d, boardNum){
   // Only name the panel when there is more than one on this board ("Main 2", "Chevron 1" -- the same
   // words the drawing uses), otherwise "FWB 3" on its own is already unmistakable.
   const multi = d.panels.length > 1;
-  d.panels.forEach(p=>{
-    const name = multi ? ' - ' + p.label.replace(/\s*\(B2B\)\s*$/i, '').replace(/\bPanel\b\s*/i, '').trim() : '';
+  const joinOn = !!(joinCfg && joinCfg.sig === joinSig(d));
+  d.panels.forEach((p, pi)=>{
+    const short = panelShortName(p);
+    const name = multi ? ' - ' + short : '';
     const b2b = p.isB2B ? ' - B2B' : '';   // B2B only when this board really is back-to-back
+    // A "joining panel" (answered on the Print pop-up) tells the Aluminium tab how wide each piece is, which way
+    // round each row runs and what to call each piece's place on the sign (TOP LEFT ...).
+    const jp = (joinOn && joinCfg.panels[pi] && joinCfg.panels[pi].on) ? joinCfg.panels[pi] : null;
+    const joinFor = (i, n)=>jp ? { fwb: boardNum, pi, panel: p.label, name: multi ? short : '', secIdx: i, secTotal: n,
+      secName: n > 1 ? sectionNameFor(i, n) : '', flip: JoinMap.flipFor(i, n, joinCfg.stagger), cols: jp.cols.slice() } : null;
     if(p.numSections > 1 && p.sectionHeights){
       const n = p.sectionHeights.length;
       p.sectionHeights.forEach((h, i)=>{
-        items.push({
+        const it = {
           label: `${base}${name} - Sec ${i+1} of ${n}${b2b}`,
           w: p.width, h: round2(h), qty: 1, rotate: true, thickness: '1.6'
-        });
+        };
+        const j = joinFor(i, n); if(j) it.join = j;
+        items.push(it);
       });
     } else {
-      items.push({
+      const it = {
         label: `${base}${name}${b2b}`,
         w: p.width, h: p.height, qty: 1, rotate: true, thickness: '1.6'
-      });
+      };
+      const j = joinFor(0, 1); if(j) it.join = j;
+      items.push(it);
     }
   });
   if(d.hasDroptag){
@@ -5420,7 +6004,8 @@ window.FWB = {
   setBoardNumberHooks, refreshStampPreview, onBoardNumInput,
   getStpPasteText: function(){ flushRecalc(); return lastCalc ? buildStpPasteText(lastCalc) : ''; },
   hasCalculatedStruts: function(){ return !!lastCalc; },
-  getAlItems: function(boardNum){ flushRecalc(); return lastCalc ? buildAlItems(lastCalc, boardNum) : []; }
+  getAlItems: function(boardNum){ flushRecalc(); if(!lastCalc) return []; registerJoinStore(boardNum); return buildAlItems(lastCalc, boardNum); },
+  askJoiningPanels
 };
 
 })();
@@ -6780,6 +7365,11 @@ window.STP = {
       <button class="add-row" id="alCarryForwardBtn" onclick="AL.carryOffcutsToStock()" style="display:none;">+ Add these offcuts to Stock On Hand (for your next job)</button>
     </div>
 
+    <div id="alJoinMapSection" style="display:none;">
+      <div class="section-title">Joining Panels <span class="chk-sub">&mdash; where each piece goes on the sign</span></div>
+      <div class="jm-grid" id="alJoinMaps"></div>
+    </div>
+
     <div class="section-title">Cut Diagrams</div>
     <div class="cut-grid" id="alCutGrid"></div>
 
@@ -6803,7 +7393,7 @@ window.STP = {
 (function(){
 'use strict';
 
-const COLORS = ['#7FB3D5','#F4B183','#A9D18E','#D9A9D9','#F7CB73','#88C9C9','#E39696','#B7B7EB','#9FD8A0','#F0A8C1'];
+const COLORS = window.JoinMap.COLORS; // one shared palette: the joining-panel picture uses the very same colours
 let stockRowId=0, orderRowId=0;
 let lastOffcutGroups = [];
 let pieceState = {}; // rowId -> {colVals:[], rowVals:[]}
@@ -6842,9 +7432,11 @@ function onStockTypeChange(id){
   }
 }
 
-function addOrderRow(label, w, h, qty, rotate, thickness){
+function addOrderRow(label, w, h, qty, rotate, thickness, join){
   const id = 'alord'+(orderRowId++);
-  pieceState[id] = {colVals:[], rowVals:[]};
+  // `join` comes from a Freeway Board that was marked as a joining panel: the piece widths picked there (all but
+  // the last, which is whatever is left), plus which way round this row runs and where it sits on the sign.
+  pieceState[id] = {colVals: (join && join.cols) ? join.cols.slice(0, -1) : [], rowVals:[], join: join || null};
   const card = document.createElement('div');
   card.className='piece-card';
   card.id = id;
@@ -7458,12 +8050,16 @@ function runCalculation(){
         for(let r=0;r<plan.rowsNeeded;r++){
           for(let c=0;c<plan.colsNeeded;c++){
             const partLabel = panelLabel(plan.colsNeeded, plan.rowsNeeded, c, r);
-            const a = {id:'alu'+(uId++), label:`${label} - ${partLabel}`, w:plan.colWidths[c], h:plan.rowHeights[r], thickness, allowRotate, colorIdx, groupId:gid, part:partLabel};
+            // Joining panel from the Freeway Board: say where this piece goes ("TOP LEFT"), counting the row's
+            // flipped order, so the workshop can match every piece to the picture of the sign.
+            const jn = (st.join && plan.rowsNeeded===1) ? st.join : null;
+            const pos = jn ? JoinMap.posWords(jn.secName, jn.secTotal, jn.flip ? plan.colsNeeded-1-c : c, plan.colsNeeded) : '';
+            const a = {id:'alu'+(uId++), label:`${label} - ${partLabel}${pos ? ' ('+pos+')' : ''}`, w:plan.colWidths[c], h:plan.rowHeights[r], thickness, allowRotate, colorIdx, groupId:gid, part:partLabel, join:jn, pos};
             atoms.push(a);
             atomicUnits.push(a);
           }
         }
-        panelGroups.push({gid, label, w, h, thickness, method:plan.type, colWidths:plan.colWidths, rowHeights:plan.rowHeights, colsNeeded:plan.colsNeeded, rowsNeeded:plan.rowsNeeded, atoms});
+        panelGroups.push({gid, label, w, h, thickness, method:plan.type, colWidths:plan.colWidths, rowHeights:plan.rowHeights, colsNeeded:plan.colsNeeded, rowsNeeded:plan.rowsNeeded, atoms, join:(st.join && plan.rowsNeeded===1) ? st.join : null});
       }
     }
   });
@@ -7593,6 +8189,8 @@ function renderResults(data){
     });
   }
 
+  buildJoinMaps(data.panelGroups);
+
   // CUT DIAGRAMS
   const cutGrid = document.getElementById('alCutGrid');
   cutGrid.innerHTML='';
@@ -7708,12 +8306,14 @@ function buildFwbCheck(byRoot){
   const el = document.getElementById('alFwbCheck');
   if(!el) return;
   const byFwb = {};
+  const joinFwb = {};
   Object.values(byRoot).forEach(root=>{
     const sm = String(root.rootLabel).match(/#(\d+)\s*$/);
     const sheet = sm ? '#' + sm[1] : shortSheetLabel(root.rootLabel);
     root.cuts.forEach(r=>{
       const p = parseFwbLabel(r.atom.label);
       if(!p) return;
+      if(r.atom.join) joinFwb[p.fwb] = true;
       const dt = parseDtRest(p.rest);
       let name;
       if(dt) name = `DT ${dt.code}` + (dt.tail ? ' ' + shortPieceLabel(dt.tail) : '');
@@ -7732,7 +8332,7 @@ function buildFwbCheck(byRoot){
     const lines = byFwb[n].map(x=>
       `<div class="stc-line"><span class="stc-label">${escHTML(x.name)} ${escHTML(x.dims)}</span><span class="stc-dims">${escHTML(x.sheet)}</span></div>`
     ).join('');
-    return `<div class="stc-block fwbchk"><div class="stc-head"><span class="stc-tick"></span>FWB ${n}</div>${lines}</div>`;
+    return `<div class="stc-block fwbchk"><div class="stc-head"><span class="stc-tick"></span>FWB ${n}${joinFwb[n] ? ' &middot; JOINING PANEL' : ''}</div>${lines}</div>`;
   }).join('');
 }
 
@@ -7779,6 +8379,42 @@ function wasteHatch(x,y,w,h){
     </pattern></defs><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#${id})" stroke="#C7CDD1" stroke-width="1.5"/>`;
 }
 
+// The picture of every joining panel (one per sign), above the cut diagrams. It is drawn from what is
+// actually going to be cut (the piece widths on this tab), laid on the scanned drawing when the Freeway Board
+// tab kept one.
+function buildJoinMaps(panelGroups){
+  const sec = document.getElementById('alJoinMapSection');
+  const host = document.getElementById('alJoinMaps');
+  if(!sec || !host) return;
+  const signs = {};
+  (panelGroups || []).forEach(g=>{
+    if(!g.join) return;
+    const key = g.join.fwb + '|' + g.join.pi;
+    const sign = signs[key] || (signs[key] = {join:g.join, w:g.w, secs:{}});
+    if(!sign.secs[g.join.secIdx]) sign.secs[g.join.secIdx] = {name:g.join.secName, h:g.rowHeights[0], flip:g.join.flip, colorIdx:g.atoms[0].colorIdx, cols:g.colWidths.slice(), thickness:g.thickness};
+  });
+  let html = '';
+  Object.keys(signs).forEach(key=>{
+    const sign = signs[key], j = sign.join;
+    const idxs = Object.keys(sign.secs).map(Number).sort((a,b)=>a-b);
+    if(idxs.length !== j.secTotal || idxs.some((v,i)=>v!==i)) return;   // a row of this sign was removed: no honest picture
+    const secs = idxs.map(i=>sign.secs[i]);
+    const spec = {w:sign.w, cols:secs[0].cols, secs};
+    const store = (window.JoinStore || {})[j.fwb];
+    const ps = store && store.panels && store.panels[j.pi];
+    const withDrawing = !!(store && store.img && store.imgW > 0 && ps && ps.box);
+    const item = {spec, fwb:j.fwb, name:j.name, box: withDrawing ? ps.box : null};
+    const L = JoinMap.layout(spec);
+    html += `<div class="jm-card">
+        <div class="jm-head"><span class="jm-badge">JOINING PANEL</span><span>FWB ${j.fwb}${j.name ? ' &middot; ' + escHTML(j.name) : ''} &middot; ${Math.round(L.w)} x ${Math.round(L.h)}mm &middot; ${L.cols} pieces across${L.rows>1 ? ' x '+L.rows+' rows high' : ''}</span></div>
+        <div class="jm-body">${JoinMap.svg({items:[item], imgSrc: withDrawing ? store.img : '', imgW: withDrawing ? store.imgW : 0, imgH: withDrawing ? store.imgH : 0, crop:true})}</div>
+        <div class="jm-note">Write each piece's name on it as you cut, so the sign goes together the way the picture shows.${L.rows>1 && secs.some(s=>s.flip) ? ' Every second row runs the other way round, so the joins do not line up.' : ''}</div>
+      </div>`;
+  });
+  host.innerHTML = html;
+  sec.style.display = html ? '' : 'none';
+}
+
 function buildPanelGroupCard(g, fulfilResults, i){
   let vbW = g.w, vbH = g.h, inner = '';
   let y=0;
@@ -7822,7 +8458,7 @@ function buildRootSheetCard(root){
   const card = document.createElement('div');
   card.className='cut-card';
   card.innerHTML = `
-    <div class="cc-head"><span>${root.rootLabel}</span><span>${util}% used</span></div>
+    <div class="cc-head"><span>${root.rootLabel}${root.cuts.some(r=>r.atom.join) ? ' <span class="jp-pill">JOINING PANEL</span>' : ''}</span><span>${util}% used</span></div>
     <div class="cc-body">${svgWrap(root.rootW, root.rootH, inner)}</div>
     <div class="legend-note">${root.cuts.length} piece${root.cuts.length!==1?'s':''} cut from this sheet: <b>${pieceList}</b></div>
   `;
@@ -7916,12 +8552,18 @@ document.getElementById('alPrintInfoModal').addEventListener('click', e=>{
 // Freeway Board tab), each pre-labelled with its board/panel/section name.
 function importFromFreewayBoard(items){
   (items||[]).forEach(function(it){
-    addOrderRow(it.label, it.w, it.h, it.qty, it.rotate, it.thickness);
+    addOrderRow(it.label, it.w, it.h, it.qty, it.rotate, it.thickness, it.join);
   });
   return (items||[]).length;
 }
 
+// Read by the Freeway Board tab: the longest single cut (decides which signs are "joining panels") and how
+// many order lines are already here (decides which colour the next imported line gets).
+function getLimits(){ return getSettings(); }
+function getOrderRowCount(){ return document.getElementById('alOrderBody').children.length; }
+
 window.AL = {
+  getLimits, getOrderRowCount,
   addOrderRow, addStockRow, carryOffcutsToStock, closePrintInfoModal, confirmPrintInfo,
   openPrintInfoModal, resetAll, runCalculation, toggleFulfilment, refreshAllPlans,
   onStockTypeChange, updateCounts, onDimChange, onSegInput, importFromFreewayBoard
@@ -7978,6 +8620,10 @@ window.Shell = (function(){
   // `num` is the number that was just stamped on the printout (so the cut list can never disagree with the
   // paper); the plain "send" button has no printout, so it simply takes the next number.
   function openImportModal(num){
+    // "Is this a joining panel?" comes first (it is remembered after the Print pop-up, so printing asks only once)
+    window.FWB.askJoiningPanels(function(ok){ if(ok) openImportModalNow(num); });
+  }
+  function openImportModalNow(num){
     const text = window.FWB.getStpPasteText();
     document.getElementById('importModalSummary').textContent = text || '(no struts to import)';
     setModalWording();
